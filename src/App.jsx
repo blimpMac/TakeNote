@@ -192,7 +192,7 @@ export default function App() {
     <header className="topbar flex items-center justify-between gap-3">
      <div className="flex items-center gap-3">
       <button className="hamburger" aria-label="Toggle navigation" aria-expanded={sidebarOpen} onClick={()=>{if(window.matchMedia('(max-width:760px)').matches)setSidebarOpen(x=>!x);else setSidebarCollapsed(x=>!x)}}><Menu size={20}/></button>
-      <div className="mobile-brand" aria-label="TakeNote"><PixelMark size={23}/><span>TakeNote</span></div>
+      <div className="mobile-brand" aria-label="TakeNote"><span className="mobile-logo-icon"><PixelMark size={21}/></span><span>TakeNote</span></div>
       <div className="breadcrumb text-xs font-extrabold">my little corner <span className="mx-2">/</span> <span className="breadcrumb-current">{view==='write'?'writing desk':view==='dashboard'?'monthly recap':view==='pinned'?'pinned notes':'my notes'}</span></div>
      </div>
      <div className="flex gap-2 items-center justify-end">

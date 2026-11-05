@@ -7,12 +7,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .app-shell{background:radial-gradient(#eee6f5 1px,transparent 1px) 0 0/19px 19px;min-height:100vh;align-items:stretch}
 .sidebar{background:#f4edfd;width:247px;min-width:247px;padding:25px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:40;border-right:2px solid #e4dcf1;transition:transform .24s ease,opacity .24s ease}
 .desktop-sidebar-hidden .sidebar{display:none}
-.logo{padding:5px 3px}.logo-icon{background:#fff0fa;border:2px solid #df8bb6;box-shadow:3px 3px 0 #e9b3d2;border-radius:7px;width:45px;height:45px;display:grid;place-items:center;transition:transform .18s ease,box-shadow .18s ease}
+.logo{padding:5px 3px}.logo-icon{background:#fff0fa;border:2px solid #df8bb6;box-shadow:3px 3px 0 #e9b3d2;border-radius:50%;width:45px;height:45px;display:grid;place-items:center;transition:transform .18s ease,box-shadow .18s ease}
 .logo-icon:hover{transform:translateY(-2px);box-shadow:3px 5px 0 #e9b3d2}
 .pixel-t-mark{display:block;image-rendering:pixelated;flex-shrink:0}
 .brand-text{font-size:15px;letter-spacing:-.9px;color:#414568;line-height:1.6}.brand-subtitle{font-weight:800;letter-spacing:.5px;font-size:9px;color:#a18cb8}
 .mobile-brand{display:none;align-items:center;gap:7px;font-family:"Press Start 2P",monospace;font-size:11px;font-weight:400;color:#4a4d74;white-space:nowrap}
-.mobile-brand .pixel-t-mark{filter:drop-shadow(1px 1px 0 #d18bb9)}
+.mobile-logo-icon{width:34px;height:34px;display:grid;place-items:center;flex-shrink:0;background:#fff0fa;border:2px solid #df8bb6;border-radius:50%;box-shadow:2px 2px 0 #e9b3d2}
 .desktop-sidebar-hidden .mobile-brand{display:inline-flex}
 .side-label{margin-left:10px}
 .nav-button{border:2px solid transparent;border-radius:11px;padding:13px 12px;display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:transparent;color:#727092;font-size:13px;font-weight:800;transition:background .15s,transform .15s,color .15s}
