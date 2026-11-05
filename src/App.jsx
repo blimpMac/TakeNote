@@ -22,8 +22,13 @@ function CatMascot() {
   <path d="M6 34h7v2H6zm0 5h7v2H6zm45-5h7v2h-7zm0 5h7v2h-7z" fill="#8a879e"/>
  </svg>;
 }
-function PixelMark({size=23}) {
- return <span aria-hidden="true" className="pixel-mark" style={{fontSize:size}}>✿</span>;
+function PixelMark({size=27}) {
+ return <svg className="pixel-t-mark" width={size} height={size} viewBox="0 0 24 24" shapeRendering="crispEdges" role="img" aria-label="TakeNote pixel T logo" focusable="false">
+  <path d="M3 4H23V10H16V22H10V10H3Z" fill="#B54D88"/>
+  <path d="M1 2H21V8H14V20H8V8H1Z" fill="#FF69B4"/>
+  <path d="M3 3H19V5H3Z" fill="#FFC2E1"/>
+  <path d="M9 8H11V18H9Z" fill="#FF9CCD"/>
+ </svg>;
 }
 const DEFAULT_AI={provider:'auto',model:'openrouter/free',endpoint:'http://localhost:11434'};
 function loadPrefs() {
@@ -168,7 +173,7 @@ export default function App() {
  return (
  <div className={'app-shell flex min-h-screen '+(sidebarCollapsed?'desktop-sidebar-hidden':'')}>
   <aside className={'sidebar '+(sidebarOpen?'sidebar-open':'')} aria-label="Main navigation">
-   <div className="logo flex gap-3 items-center"><div className="logo-icon"><PixelMark/></div><div><div className="brand-text">TakeNote</div><div className="brand-subtitle">PIXEL EDITION ♡</div></div></div>
+   <div className="logo flex gap-3 items-center"><div className="logo-icon"><PixelMark/></div><div><div className="brand-text">TakeNote</div><div className="brand-subtitle">YOUR PIXEL NOTEBOOK ♡</div></div></div>
    <p className="side-label pixel-kicker mt-12 mb-4">✦ YOUR HAPPY PLACE</p>
    <nav className="flex flex-col gap-2">
     <NavButton label="New note" icon={Plus} primary active={view==='write'} action={createNote}/>
@@ -187,6 +192,7 @@ export default function App() {
     <header className="topbar flex items-center justify-between gap-3">
      <div className="flex items-center gap-3">
       <button className="hamburger" aria-label="Toggle navigation" aria-expanded={sidebarOpen} onClick={()=>{if(window.matchMedia('(max-width:760px)').matches)setSidebarOpen(x=>!x);else setSidebarCollapsed(x=>!x)}}><Menu size={20}/></button>
+      <div className="mobile-brand" aria-label="TakeNote"><PixelMark size={23}/><span>TakeNote</span></div>
       <div className="breadcrumb text-xs font-extrabold">my little corner <span className="mx-2">/</span> <span className="breadcrumb-current">{view==='write'?'writing desk':view==='dashboard'?'monthly recap':view==='pinned'?'pinned notes':'my notes'}</span></div>
      </div>
      <div className="flex gap-2 items-center justify-end">
