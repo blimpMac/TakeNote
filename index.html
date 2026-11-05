@@ -95,6 +95,24 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .writing-original{max-height:250px;min-height:215px;overflow:auto;overflow-wrap:anywhere}
 .writing-proposal{width:100%;min-height:210px;font:inherit;color:#464c68}
 @media(max-width:520px){.writing-compare{grid-template-columns:1fr}.writing-original{min-height:90px;max-height:150px}}
+
+.hero{min-height:218px}
+.hero>div:first-child{min-width:0;z-index:2}
+.daily-quote{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;margin-top:14px;color:#666c91;font-size:12px;line-height:1.55}
+.daily-quote-label{font-family:var(--pixel);font-size:8px;color:#b17eab;white-space:nowrap}
+#daily-quote-text{font-weight:800;color:#666b91}
+#daily-quote-date{color:#9690ab;font-size:11px;font-weight:700}
+.archive-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.archive-card{display:flex;flex-direction:column;gap:10px;text-align:left;min-width:0;min-height:185px;border:2px solid #d3cbea;border-radius:11px;background:#fffdfd;box-shadow:4px 4px 0 #e7ddf0;color:#505577;padding:17px;transition:transform .15s,box-shadow .15s}
+.archive-card:hover{transform:translateY(-3px);box-shadow:4px 7px 0 #d7d4ed}
+.archive-card[data-color="pink"]{background:#fff0f7;border-color:#edbad4}.archive-card[data-color="blue"]{background:#eff6ff;border-color:#b5cbe9}.archive-card[data-color="yellow"]{background:#fff9e8;border-color:#ead7ac}.archive-card[data-color="mint"]{background:#effaf3;border-color:#bedec9}.archive-card[data-color="lavender"]{background:#f6f2ff;border-color:#cfc1f0}
+.archive-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#8c85a7;font-size:10px;font-weight:800}
+.archive-card-title{font-size:16px;font-weight:800;line-height:1.5;overflow-wrap:anywhere;color:#414663}
+.archive-card-preview{flex:1;color:#81829c;font-size:12px;line-height:1.65;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;white-space:pre-line}
+.archive-card-bottom{display:flex;justify-content:space-between;gap:8px;border-top:1px dashed #d2cbe1;padding-top:10px;color:#7d85b0;font-size:11px;font-weight:800}
+@media(max-width:1080px){.archive-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:730px){.hero{min-height:205px}.daily-quote{margin-top:10px}}
+@media(max-width:520px){.archive-grid{grid-template-columns:1fr}.daily-quote-label{font-size:7px}.hero{padding:20px 16px}}
 </style>
 </head>
 <body>
@@ -111,7 +129,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <div class="nav-backdrop" id="nav-backdrop" hidden></div>
 <main class="main"><div class="content">
  <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" id="menu-toggle" aria-label="Toggle notebook menu" aria-controls="app-sidebar" aria-expanded="true">☰</button><div class="crumb">my little corner <span>/</span> <span id="crumb-view">notebook</span></div></div><div class="right-tools"><span class="status">● autosaved locally</span><button class="btn quiet" type="button" id="settings-btn">⚙ AI settings</button><div class="avatar" aria-label="Pixel companion">🐱</div></div></header>
- <section class="hero"><div><div class="eyebrow">✧ WELCOME TO YOUR HAPPY PLACE ✧</div><h1>little notes, <em>big ideas!</em> <span class="spark">✦</span></h1><p>Catch your thoughts, collect the magic, make every idea count. ♡</p></div><div class="hero-art" aria-hidden="true">☁️💌</div></section>
+ <section class="hero"><div><div class="eyebrow">✧ WELCOME TO YOUR HAPPY PLACE ✧</div><h1>little notes, <em>big ideas!</em> <span class="spark">✦</span></h1><p>Catch your thoughts, collect the magic, make every idea count. ♡</p><div class="daily-quote"><span class="daily-quote-label">✧ QUOTE OF THE DAY</span><span id="daily-quote-text">“Small steps have a way of becoming big stories.”</span><time id="daily-quote-date"></time></div></div><div class="hero-art" aria-hidden="true">☁️💌</div></section>
  <section id="notes-view">
  <div class="section-bar"><div><h2>✿ My little notebook</h2><p id="notes-subtitle">Your thoughts live here ♡</p></div><div class="actions"><div class="seg" role="group" aria-label="Notebook layout"><button type="button" data-grid="1">1×1</button><button type="button" class="active" data-grid="2">2×2</button><button type="button" data-grid="4">4×4</button></div><button class="btn primary" id="new-btn" type="button">＋ New note</button></div></div>
  <div class="toolbar"><label class="search">⌕ <input id="search" type="search" placeholder="Search your notes..." aria-label="Search notes"></label><select class="filter" id="sort" aria-label="Sort notes"><option value="updated">✦ Recently edited</option><option value="created">Date created</option><option value="title">Title A–Z</option></select><select class="filter" id="color-filter" aria-label="Filter by color"><option value="all">All colors</option><option value="pink">Pink</option><option value="blue">Blue</option><option value="yellow">Yellow</option><option value="mint">Mint</option><option value="lavender">Lavender</option></select></div>
@@ -136,6 +154,48 @@ const formatDate=s=>new Date(s).toLocaleDateString(undefined,{month:'short',day:
 const monthKey=s=>{const d=new Date(s);return Number.isNaN(d.getTime())?'':d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const uid=()=>globalThis.crypto?.randomUUID?.()||'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.floor(Math.random()*16);return(c==='x'?r:(r&3|8)).toString(16)});
 const today=new Date();let notes=[],prefs={grid:2},view='notes',page=0,search='',sort='updated',colorFilter='all',selectedMonth=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0'),apiKey='';
+
+const dailyQuotes=[
+ "A little progress every day becomes something wonderful.",
+ "Ideas grow when you give them a place to land.",
+ "Begin with one thought. The rest can follow.",
+ "Your next great idea might start as a tiny note.",
+ "Make room for curiosity, even on the busiest days.",
+ "You do not need a perfect plan to make a fresh start.",
+ "Small steps have a way of becoming big stories.",
+ "Write it down today. Thank yourself tomorrow.",
+ "A calm mind makes space for brighter ideas.",
+ "Every page is another chance to begin again.",
+ "Your pace is enough. Keep your ideas moving.",
+ "Collect little moments. They add up beautifully.",
+ "A simple idea deserves a chance to shine.",
+ "Progress can be quiet and still matter.",
+ "The best place to start is right where you are.",
+ "Let your thoughts be messy before they become clear.",
+ "One kind reminder can change an entire day.",
+ "Build your dreams one thoughtful line at a time.",
+ "The little things you notice are worth remembering.",
+ "A new day is a blank page, not a deadline.",
+ "Give yourself credit for showing up today.",
+ "Take the next step, even if it is a small one.",
+ "Good ideas often begin with an ordinary moment.",
+ "You can slow down without giving up.",
+ "Make something simple, then make it yours.",
+ "Your notes are proof that you keep learning.",
+ "There is room for both ambition and rest.",
+ "Let today be about trying, not perfection.",
+ "A fresh perspective begins with a single question.",
+ "Find a little wonder in what you are working on.",
+ "What you write today can help you grow tomorrow."
+];
+function renderDailyQuote(){
+ const d=new Date(),day=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);
+ $('daily-quote-text').textContent='“'+dailyQuotes[((day%dailyQuotes.length)+dailyQuotes.length)%dailyQuotes.length]+'”';
+ const date=$('daily-quote-date');
+ date.dateTime=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+ date.textContent=d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+
 const colors=['pink','blue','yellow','mint','lavender'], nextColor=()=>colors[notes.length%colors.length];
 function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;$('toasts').append(el);setTimeout(()=>el.remove(),3500)}
 function persist(){try{localStorage.setItem(STORE,JSON.stringify(notes));return true}catch(e){toast('Storage is full or unavailable. Export a backup!');return false}}
@@ -292,7 +352,7 @@ $('month-picker').onchange=e=>{if(/^\d{4}-\d{2}$/.test(e.target.value)){selected
 $('backup-btn').onclick=()=>download('takenote-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'TakeNote',version:1,exported:new Date().toISOString(),notes},null,2),'application/json');
 $('import-btn').onclick=()=>$('import-file').click();$('import-file').onchange=async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>5*1024*1024)throw Error('Backup must be under 5 MB');const json=JSON.parse(await file.text()),data=Array.isArray(json)?json:json.notes;if(!Array.isArray(data)||data.length>3000)throw Error('Invalid note backup');const restored=data.filter(n=>n&&typeof n.id==='string'&&typeof n.body==='string').map(n=>({id:n.id,title:String(n.title||'').slice(0,160),body:n.body.slice(0,100000),created:n.created&& !Number.isNaN(Date.parse(n.created))?n.created:new Date().toISOString(),updated:n.updated&&!Number.isNaN(Date.parse(n.updated))?n.updated:new Date().toISOString(),pinned:!!n.pinned,color:colors.includes(n.color)?n.color:'pink'}));if(!confirm('Restore '+restored.length+' notes? This replaces all notes currently saved in this browser. Export a backup first if needed.'))return;notes=restored;persist();renderMonth();refreshDigest();toast('Your notes are restored ♡')}catch(err){toast('Could not restore: '+err.message)}};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeNotebookMenu()}if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();showView('notes');$('search').focus()}});
-load();$('month-picker').value=selectedMonth;renderBoard();refreshDigest();$('menu-toggle').setAttribute('aria-expanded',String(!window.matchMedia('(max-width:730px)').matches));
+renderDailyQuote();setInterval(renderDailyQuote,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderDailyQuote()});load();$('month-picker').value=selectedMonth;renderBoard();refreshDigest();$('menu-toggle').setAttribute('aria-expanded',String(!window.matchMedia('(max-width:730px)').matches));
 })();
 </script>
 </body></html>
