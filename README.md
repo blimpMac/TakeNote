@@ -1,49 +1,45 @@
-# TakeNote ✦ Pixel Edition
+# TakeNote ✿ Pixel Edition
 
-A playful, free, privacy-minded notes workspace with pastel pixel-art styling, an original kitty mascot, automatic highlights, multi-note boards, and monthly compilations.
+A cozy, pixel-inspired notebook rebuilt with **React 19**, **Vite**, **Tailwind CSS v4** and custom CSS. The site is login-free, and notes save locally in your browser.
 
-## What it does
-- Autosaved notes in exact **1×1 (one pad)**, **2×2 (four pads)**, or **4×4 (sixteen pads)** layouts, with pagination when notes exceed the visible slots.
-- **New note** opens directly in a dedicated writing desk. Notes are saved automatically as you type and remain available under **My notebook**.
-- **My notebook** is a saved-note archive with a filter by creation month (including **All months**), search, sorting, and colors. Click a saved note to reopen it in the writing desk.
-- An original daily inspirational quote rotates automatically inside the pastel pixel-style header.
-- Automatic **offline summaries** and **key-detail extraction** (dates, tasks, priorities) while you write.
-- **Monthly dashboard** with note counts, words, active days, a notes timeline, combined summaries, and exportable Markdown recaps.
-- Optional AI enhancement: **Ollama** (local/open-source; no paid API) or **OpenRouter free-model router** (free, rate-limited, user-provided key).
-- Hamburger notebook menu with **New note**, search, pin, color controls, JSON backup/restore, and Markdown export.
-- Bullet, numbered, and checkbox lists that continue automatically when you press Enter. Press Enter on an empty bullet to exit the list.
-- Browser-native spelling underlines and suggestions (right-click to review), with browser autocorrect disabled.
-- Optional **AI Edit** for spelling/grammar, improved wording, and sentence reconstruction. Changes appear as suggestions and are applied **only** after user approval.
-- Works as a static site; no account, backend, or build tools required.
+## Features
+- **New note** opens the dedicated writing desk. Your text autosaves as you type.
+- **My notes** is a saved-note library with month, color, search, and sorting filters. Click a saved-note card to open a **pixel-styled editing window inside the website** (a modal, not a new browser tab). The note stays editable and saved.
+- Writing desk grid controls: **1×1** (one note), **2×2** (four different note slots), **4×4** (sixteen slots). Empty slots create new notes.
+- Bullet, numbered and checkbox lists automatically continue with Enter; Enter on a blank list item exits list mode.
+- Browser spellcheck plus AI suggestions: spelling/grammar, wording improvements, restructuring and highlights. Review the original and proposed text before applying changes.
+- Daily rotating inspirational quotes, monthly recap dashboard, task highlights, pinned notes, JSON backup/restore, and Markdown export.
+- Subtle hover/float/window animations, with reduced-motion accessibility support.
 
-## Run
-Open `index.html` in a modern browser. For consistent local API behavior, serve it with:
-```bash
-python3 -m http.server 5173
+## Compatibility and local storage
+The app uses the same browser storage key as the original site: `takenote.pixel.v1`. It normalizes existing notes without changing their content. Notes are local to each browser/device; there is **no cloud sync or login**. Backup periodically from **My notes → Backup** or **Monthly recap → Backup JSON**. Browser storage can be deleted when clearing site data.
+
+## AI setup — working options, without a site account
+By default, **Auto** tries Chrome's built-in Prompt API on compatible hardware/browsers, then a configured OpenRouter key, then offers offline corrections. There is no guaranteed free public model without either local capability or a user-provided free-model key.
+
+1. **Browser AI**: On compatible Chrome desktop devices, open **AI settings** and choose **Auto** or **Browser AI**. Availability can vary with version, hardware and model download. Note text is processed on-device.
+2. **OpenRouter free models**: Create your own API key at https://openrouter.ai/keys. In **AI settings**, select **OpenRouter free models**, paste the key, and choose `openrouter/free`. Free usage is subject to rate limits and provider availability. The key is held **only in the page's memory** (not committed or stored) and must be entered after a refresh. The chosen provider receives note text only after you click **Generate suggestions**.
+3. **Ollama local**: Install https://ollama.com and run `ollama pull gemma3:1b`. Select **Ollama** and use model `gemma3:1b`, endpoint `http://localhost:11434`. Browser CORS may require setting `OLLAMA_ORIGINS` to the exact TakeNote website origin before restarting Ollama. HTTPS-to-localhost access can depend on browser policies.
+4. **Offline helper**: Works automatically with no key, using common spelling/spacing corrections and extractive highlights. It is not an LLM. Browser spelling underlines offer additional right-click suggestions.
+
+All AI changes are **preview-only** until you select **Apply revision**. The option to summarize monthly notes can create a new recap note after approval.
+
+## Development
+
+```sh
+npm install
+npm run dev
+npm run build
 ```
-Then open http://localhost:5173.
 
-No login is required. Notes are saved **only in your browser** with localStorage; the previous Supabase login integration has been removed from the website. Use **Backup JSON** periodically: clearing browser data removes unbacked-up notes. The old database table was not dropped, but TakeNote no longer sends requests to it.
+Open the local URL shown by Vite. The site deploys to Vercel as a Vite project with build command `npm run build` and output directory `dist`. Tailwind CSS v4 uses the official `@tailwindcss/vite` plugin and `@import "tailwindcss";` in `src/styles.css`.
 
-## AI providers
-Offline digest generation works without a service.
+## Source structure
+- `src/App.jsx` — navigation, archive, grid desk, dashboard and in-app note window
+- `src/components/NotePad.jsx` — shared pixel editor, lists and autosave
+- `src/components/AiPanel.jsx` — AI compare/approve and settings
+- `src/lib/notes.js` — storage, lists, exports, quotes and summaries
+- `src/lib/ai.js` — browser Prompt API, OpenRouter, Ollama and offline fallback
+- `src/styles.css` — Tailwind import, custom palette and animations
 
-### Ollama (free & local)
-1. Install [Ollama](https://ollama.com/) and pull a small open-weight model, for example `ollama pull gemma3:1b`.
-2. Ensure Ollama is running; in the TakeNote AI settings choose **Ollama (local)** and enter the model name.
-3. If browser cross-origin access is blocked, configure Ollama's `OLLAMA_ORIGINS` to include the exact app origin (for example `http://localhost:5173`, or your deployed GitHub Pages origin), then restart Ollama. Consult [Ollama's FAQ](https://docs.ollama.com/faq#how-do-i-configure-ollama-server) for OS-specific configuration.
-4. Requests remain between your browser and the Ollama server configured at `http://localhost:11434`.
-
-### OpenRouter (hosted free tier)
-1. Create your own key at [OpenRouter](https://openrouter.ai/keys).
-2. Choose **OpenRouter (free models)** in AI settings, paste the key, and use `openrouter/free` to route to an available free model.
-3. Free-model requests are rate-limited and subject to service availability. A model picked by the free router is not guaranteed to be open-source; choose a specific open-weight `:free` model if required.
-4. Your key is held in browser memory only for the current tab session (never committed or stored). Your note content is sent to the provider only when you click an AI action.
-
-If an AI provider is unavailable, the app keeps working with offline summaries and browser-native spelling hints. Never publish private API keys in source code or commit them to Git.
-
-## Publishing
-The included GitHub Actions workflow deploys the repository to GitHub Pages when Pages is configured to use **GitHub Actions** as the publishing source. In GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-
-## License
-MIT. The kitty pixel mascot is original artwork, not official Sanrio/Hello Kitty art.
+The original kitty pixel mascot is independent artwork and not an official licensed character.
