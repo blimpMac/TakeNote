@@ -4,6 +4,9 @@ A playful, free, privacy-minded notes workspace with pastel pixel-art styling, a
 
 ## What it does
 - Autosaved notes in exact **1×1 (one pad)**, **2×2 (four pads)**, or **4×4 (sixteen pads)** layouts, with pagination when notes exceed the visible slots.
+- **New note** opens directly in a dedicated writing desk. Notes are saved automatically as you type and remain available under **My notebook**.
+- **My notebook** is a saved-note archive with a filter by creation month (including **All months**), search, sorting, and colors. Click a saved note to reopen it in the writing desk.
+- An original daily inspirational quote rotates automatically inside the pastel pixel-style header.
 - Automatic **offline summaries** and **key-detail extraction** (dates, tasks, priorities) while you write.
 - **Monthly dashboard** with note counts, words, active days, a notes timeline, combined summaries, and exportable Markdown recaps.
 - Optional AI enhancement: **Ollama** (local/open-source; no paid API) or **OpenRouter free-model router** (free, rate-limited, user-provided key).
