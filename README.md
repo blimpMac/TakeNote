@@ -1,6 +1,6 @@
-# TakeNote ✿ Pixel Edition
+# TakeNote
 
-A cozy, pixel-inspired notebook rebuilt with **React 19**, **Vite**, **Tailwind CSS v4** and custom CSS. The site is login-free, and notes save locally in your browser.
+A cozy, pixel-inspired notebook with a **pink 8-bit T logo**, built with **React 19**, **Vite**, **Tailwind CSS v4** and custom CSS. The site is login-free, and notes save locally in your browser.
 
 ## Features
 - **New note** opens the dedicated writing desk. Your text autosaves as you type.
