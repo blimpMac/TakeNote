@@ -120,7 +120,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <aside class="sidebar" id="app-sidebar" aria-label="Notebook menu">
  <div class="logo"><div class="logo-badge">✿</div><div class="brand">TakeNote<small>PIXEL EDITION ♡</small></div></div>
  <div><p class="side-label">✦ YOUR SPACE</p><nav class="nav" aria-label="Main navigation"><button type="button" id="nav-new-btn" class="nav-new"><span class="nav-icon">＋</span> New note</button>
- <button type="button" class="active" data-view="notes"><span class="nav-icon">▦</span> My notebook</button>
+ <button type="button" class="active" data-view="notebook"><span class="nav-icon">▦</span> My notebook</button>
  <button type="button" data-view="dashboard"><span class="nav-icon">▥</span> Monthly recap</button>
  <button type="button" data-view="favorites"><span class="nav-icon">♡</span> Pinned notes</button>
  </nav></div>
@@ -130,11 +130,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 <main class="main"><div class="content">
  <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" id="menu-toggle" aria-label="Toggle notebook menu" aria-controls="app-sidebar" aria-expanded="true">☰</button><div class="crumb">my little corner <span>/</span> <span id="crumb-view">notebook</span></div></div><div class="right-tools"><span class="status">● autosaved locally</span><button class="btn quiet" type="button" id="settings-btn">⚙ AI settings</button><div class="avatar" aria-label="Pixel companion">🐱</div></div></header>
  <section class="hero"><div><div class="eyebrow">✧ WELCOME TO YOUR HAPPY PLACE ✧</div><h1>little notes, <em>big ideas!</em> <span class="spark">✦</span></h1><p>Catch your thoughts, collect the magic, make every idea count. ♡</p><div class="daily-quote"><span class="daily-quote-label">✧ QUOTE OF THE DAY</span><span id="daily-quote-text">“Small steps have a way of becoming big stories.”</span><time id="daily-quote-date"></time></div></div><div class="hero-art" aria-hidden="true">☁️💌</div></section>
- <section id="notes-view">
- <div class="section-bar"><div><h2>✿ My little notebook</h2><p id="notes-subtitle">Your thoughts live here ♡</p></div><div class="actions"><div class="seg" role="group" aria-label="Notebook layout"><button type="button" data-grid="1">1×1</button><button type="button" class="active" data-grid="2">2×2</button><button type="button" data-grid="4">4×4</button></div><button class="btn primary" id="new-btn" type="button">＋ New note</button></div></div>
- <div class="toolbar"><label class="search">⌕ <input id="search" type="search" placeholder="Search your notes..." aria-label="Search notes"></label><select class="filter" id="sort" aria-label="Sort notes"><option value="updated">✦ Recently edited</option><option value="created">Date created</option><option value="title">Title A–Z</option></select><select class="filter" id="color-filter" aria-label="Filter by color"><option value="all">All colors</option><option value="pink">Pink</option><option value="blue">Blue</option><option value="yellow">Yellow</option><option value="mint">Mint</option><option value="lavender">Lavender</option></select></div>
+ <section id="editor-view" class="hidden">
+ <div class="section-bar"><div><h2>✎ Your writing desk</h2><p id="notes-subtitle">Write your ideas here. Every note saves automatically ♡</p></div><div class="actions"><div class="seg" role="group" aria-label="Notebook layout"><button type="button" data-grid="1">1×1</button><button type="button" class="active" data-grid="2">2×2</button><button type="button" data-grid="4">4×4</button></div><button class="btn primary" id="new-btn" type="button">＋ New note</button></div></div>
  <div class="board" id="board" data-grid="2" aria-label="Editable notes grid"></div><div class="pagination" id="pagination"></div>
  <div class="panels"><article class="panel"><h3>✦ Quick brain dump digest</h3><p class="small">Your latest notes, distilled automatically. No sign-in or AI key needed.</p><ul class="summary-list" id="quick-summary"></ul><div class="modal-actions"><button class="btn pink" id="ai-digest-btn" type="button">✧ Enhance with AI</button><button class="btn quiet" id="copy-digest-btn" type="button">⧉ Copy digest</button></div></article><article class="panel"><h3>♡ Little productivity corner</h3><p id="productivity"></p><div class="tip">✿ Tiny tip: start lines with “TODO:” or “- [ ]” to make tasks stand out in your automatic digest.</div></article></div>
+ </section>
+
+ <section id="notebook-view">
+  <div class="section-bar"><div><h2 id="notebook-title">✿ My notebook</h2><p id="archive-subtitle">Your saved notes, organized by month ♡</p></div><div class="actions"><button type="button" class="btn primary" id="archive-new-btn">＋ Write a new note</button></div></div>
+ <div class="toolbar"><label class="search">⌕ <input id="search" type="search" placeholder="Search your notes..." aria-label="Search notes"></label><select class="filter" id="notebook-month" aria-label="Filter notes by month"><option value="all">All months</option></select><select class="filter" id="sort" aria-label="Sort notes"><option value="updated">✦ Recently edited</option><option value="created">Date created</option><option value="title">Title A–Z</option></select><select class="filter" id="color-filter" aria-label="Filter by color"><option value="all">All colors</option><option value="pink">Pink</option><option value="blue">Blue</option><option value="yellow">Yellow</option><option value="mint">Mint</option><option value="lavender">Lavender</option></select></div>
+  <div class="archive-grid" id="archive-grid" aria-label="Saved notes collection"></div>
+  <div class="pagination" id="archive-pagination"></div>
  </section>
  <section id="dashboard-view" class="hidden">
  <div class="section-bar"><div><h2>▥ Monthly scrapbook</h2><p>Your whole month of ideas, all in one cozy corner.</p></div><div class="actions"><input class="month-select" id="month-picker" type="month" aria-label="Select month"><button class="btn pink" id="month-ai" type="button">✧ AI recap</button><button class="btn primary" id="month-export" type="button">↓ Export recap</button></div></div>
@@ -153,7 +159,7 @@ const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const formatDate=s=>new Date(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
 const monthKey=s=>{const d=new Date(s);return Number.isNaN(d.getTime())?'':d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const uid=()=>globalThis.crypto?.randomUUID?.()||'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.floor(Math.random()*16);return(c==='x'?r:(r&3|8)).toString(16)});
-const today=new Date();let notes=[],prefs={grid:2},view='notes',page=0,search='',sort='updated',colorFilter='all',selectedMonth=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0'),apiKey='';
+const today=new Date();let notes=[],prefs={grid:2},view='notebook',page=0,archivePage=0,archiveMonth='all',activeNoteId=null,search='',sort='updated',colorFilter='all',selectedMonth=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0'),apiKey='';
 
 const dailyQuotes=[
  "A little progress every day becomes something wonderful.",
@@ -205,14 +211,56 @@ function createNote(title='',body=''){const date=new Date().toISOString(),n={id:
 function tasksOf(n){return (n.body||'').split('\n').filter(x=>/^\s*(?:[-*]\s*)?(?:\[ \]\s*|todo\s*:|task\s*:|important\s*:|deadline\s*:)/i.test(x)).map(x=>x.trim().replace(/^[-*]\s*/,'').slice(0,140))}
 function sentences(s){return (s||'').replace(/\s+/g,' ').split(/(?<=[.!?])\s+|\s*[\n•]+\s*/).map(x=>x.trim()).filter(x=>x.length>12)}
 function digest(arr,limit=5){if(!arr.length)return ['Nothing here yet. Create a note and let your ideas bloom ♡'];let out=[],seen=new Set();for(const n of arr){for(const t of tasksOf(n)){const v='☐ '+t;if(!seen.has(v)){out.push(v);seen.add(v)}}}for(const n of arr){const t=n.title.trim()||'Untitled thought',s=sentences(n.body).find(s=>s.length>18)||n.body.trim().slice(0,125);const v=t+(s?' — '+s.slice(0,140):'');if(!seen.has(v)){out.push(v);seen.add(v)}}return out.slice(0,limit)}
-function filtered(){let a=notes.filter(n=>(view!=='favorites'||n.pinned)&&(!search||(n.title+' '+n.body).toLowerCase().includes(search))&&(colorFilter==='all'||n.color===colorFilter));a.sort((a,b)=>(Number(b.pinned)-Number(a.pinned))|| (sort==='title'?a.title.localeCompare(b.title):new Date(sort==='created'?b.created:b.updated)-new Date(sort==='created'?a.created:a.updated)));return a}
+function filtered(){
+ let a=notes.filter(n=>(view!=='favorites'||n.pinned)&&(!search||(n.title+' '+n.body).toLowerCase().includes(search))&&(colorFilter==='all'||n.color===colorFilter)&&(archiveMonth==='all'||monthKey(n.created)===archiveMonth));
+ a.sort((a,b)=>(Number(b.pinned)-Number(a.pinned))||(sort==='title'?a.title.localeCompare(b.title):new Date(sort==='created'?b.created:b.updated)-new Date(sort==='created'?a.created:a.updated)));
+ return a;
+}
+function writerNotes(){
+ const ordered=[...notes].sort((a,b)=>new Date(b.updated)-new Date(a.updated));
+ const index=ordered.findIndex(n=>n.id===activeNoteId);
+ if(index>0)ordered.unshift(ordered.splice(index,1)[0]);
+ return ordered;
+}
+function updateArchiveMonths(){
+ const months=[...new Set(notes.map(n=>monthKey(n.created)).filter(Boolean))].sort().reverse();
+ $('notebook-month').innerHTML='<option value="all">All months</option>'+months.map(v=>'<option value="'+v+'">'+escapeHTML(new Date(v+'-01T12:00:00').toLocaleDateString(undefined,{month:'long',year:'numeric'}))+'</option>').join('');
+ if(archiveMonth!=='all'&&!months.includes(archiveMonth))archiveMonth='all';
+ $('notebook-month').value=archiveMonth;
+}
+function renderArchive(){
+ updateArchiveMonths();
+ const results=filtered(),perPage=18,max=Math.max(0,Math.ceil(results.length/perPage)-1);
+ archivePage=Math.min(archivePage,max);
+ $('notebook-title').textContent=view==='favorites'?'♡ Pinned notes':'✿ My notebook';
+ const selectedLabel=archiveMonth==='all'?'all months':$('notebook-month').selectedOptions[0].textContent;
+ $('archive-subtitle').textContent=results.length+' saved note'+(results.length===1?'':'s')+' · '+selectedLabel+' · Click one to edit';
+ const batch=results.slice(archivePage*perPage,(archivePage+1)*perPage);
+ $('archive-grid').innerHTML=batch.length?batch.map(n=>
+ '<button type="button" class="archive-card" data-open-note="'+escapeHTML(n.id)+'" data-color="'+n.color+'" aria-label="Open '+escapeHTML(n.title||'Untitled note')+'">'+
+ '<span class="archive-card-top"><span>✿ '+escapeHTML(new Date(n.created).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}))+'</span><span>'+(n.pinned?'★ PINNED':'♡ NOTE')+'</span></span>'+
+ '<strong class="archive-card-title">'+escapeHTML(n.title||'Untitled thought')+'</strong>'+
+ '<span class="archive-card-preview">'+escapeHTML(n.body.trim()||'A blank little page, full of possibilities...')+'</span>'+
+ '<span class="archive-card-bottom"><span>'+n.body.trim().split(/\s+/).filter(Boolean).length+' words</span><span>Open note →</span></span></button>').join(''):
+ '<div class="empty"><span style="font-size:36px">📚</span><strong>No saved notes found</strong><p>Try another month or write a new note.</p><button type="button" class="btn pink" id="archive-empty-new">＋ New note</button></div>';
+ $('archive-pagination').innerHTML=results.length>perPage?'<button type="button" id="archive-prev" '+(archivePage===0?'disabled':'')+'>‹ Previous</button><span>Page '+(archivePage+1)+' of '+(max+1)+'</span><button type="button" id="archive-next" '+(archivePage===max?'disabled':'')+'>Next ›</button>':'';
+ $('archive-prev')?.addEventListener('click',()=>{archivePage--;renderArchive()});
+ $('archive-next')?.addEventListener('click',()=>{archivePage++;renderArchive()});
+ $('archive-empty-new')?.addEventListener('click',newNote);
+}
+function openSavedNote(id){
+ if(!notes.some(n=>n.id===id))return;
+ activeNoteId=id;page=0;showView('editor');
+ $('board').querySelector('[data-id="'+CSS.escape(id)+'"] .note-body')?.focus();
+}
+
 
 function renderBoard(){
- const all=filtered(),capacity=prefs.grid*prefs.grid,max=Math.max(0,Math.ceil(all.length/capacity)-1);
+ const all=writerNotes(),capacity=prefs.grid*prefs.grid,max=Math.max(0,Math.ceil(all.length/capacity)-1);
  page=Math.min(page,max);
  $('board').dataset.grid=String(prefs.grid);
  document.querySelectorAll('[data-grid]').forEach(b=>{if(b.tagName==='BUTTON'){b.classList.toggle('active',+b.dataset.grid===prefs.grid);b.setAttribute('aria-pressed',String(+b.dataset.grid===prefs.grid))}});
- $('notes-subtitle').textContent=notes.length+' saved note'+(notes.length===1?'':'s')+' ✦ '+(view==='favorites'?'Pinned favorites':'Write something lovely today');
+ $('notes-subtitle').textContent=notes.length+' saved note'+(notes.length===1?'':'s')+' ✦ Choose your writing layout';
  const batch=all.slice(page*capacity,(page+1)*capacity);
  const tools='<div class="editor-tools" aria-label="List formatting and writing help"><button type="button" data-action="bullet">• Bullets</button><button type="button" data-action="number">1. Numbers</button><button type="button" data-action="checklist">☐ Tasks</button><button type="button" data-action="writing">✧ AI edit</button></div>';
  const cards=batch.map(n=>
@@ -225,7 +273,7 @@ function renderBoard(){
   tools+
   '<div class="note-foot"><span class="note-date">'+escapeHTML(formatDate(n.updated))+' · '+n.body.trim().split(/\s+/).filter(Boolean).length+' words</span><button type="button" data-action="insights">✧ Highlights</button></div></article>'
  );
- const showEmptySlots=view==='notes'&&!search&&colorFilter==='all';
+ const showEmptySlots=true;
  if(showEmptySlots)while(cards.length<capacity){
   const slot=page*capacity+cards.length+1;
   cards.push('<button type="button" class="note empty-slot" data-action="create-in-slot" aria-label="Start a new note in slot '+slot+'"><span class="slot-heading">✿ NOTE '+slot+'</span><span class="slot-body" aria-hidden="true"></span><span class="slot-hint">＋ Click to start writing</span></button>');
@@ -325,12 +373,12 @@ function writingAssistant(n){
  };
 }
 
-function newNote(){const n=createNote();view='notes';search='';colorFilter='all';$('search').value='';$('color-filter').value='all';page=0;showView('notes');renderBoard();refreshDigest();const index=filtered().findIndex(x=>x.id===n.id);if(index>=0){page=Math.floor(index/(prefs.grid*prefs.grid));renderBoard()}const el=$('board').querySelector('[data-id="'+n.id+'"] .note-body');el?.focus();closeNotebookMenu();toast('A fresh page, just for you ♡')}
-function showView(v){view=v;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));$('notes-view').classList.toggle('hidden',v==='dashboard');$('dashboard-view').classList.toggle('hidden',v!=='dashboard');$('crumb-view').textContent=v==='dashboard'?'monthly recap':v==='favorites'?'pinned notes':'notebook';if(v==='dashboard')renderMonth();else renderBoard();closeNotebookMenu()}
+function newNote(){const n=createNote();activeNoteId=n.id;page=0;showView('editor');refreshDigest();$('board').querySelector('[data-id="'+CSS.escape(n.id)+'"] .note-body')?.focus();toast('A fresh page, just for you ♡')}
+function showView(v){view=v;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));$('nav-new-btn').classList.toggle('active',v==='editor');$('editor-view').classList.toggle('hidden',v!=='editor');$('notebook-view').classList.toggle('hidden',v!=='notebook'&&v!=='favorites');$('dashboard-view').classList.toggle('hidden',v!=='dashboard');$('crumb-view').textContent=v==='dashboard'?'monthly recap':v==='favorites'?'pinned notes':v==='editor'?'writing desk':'my notebook';if(v==='dashboard')renderMonth();else if(v==='editor')renderBoard();else renderArchive();closeNotebookMenu()}
 function updateNote(id,key,value){const n=notes.find(n=>n.id===id);if(!n)return;n[key]=value;n.updated=new Date().toISOString();persist();refreshDigest();const note=$('board').querySelector('[data-id="'+CSS.escape(id)+'"]');if(note){const label=note.querySelector('.note-date');if(label)label.textContent=formatDate(n.updated)+' · '+n.body.trim().split(/\s+/).filter(Boolean).length+' words'}}
 function showModal(title,html){$('modal-root').innerHTML='<div class="modal-back" id="modal-back"><div class="modal" role="dialog" aria-modal="true" aria-label="'+escapeHTML(title)+'"><div class="modal-top"><h2>'+escapeHTML(title)+'</h2><button class="icon-btn" id="close-modal" aria-label="Close dialog">✕</button></div>'+html+'</div></div>';$('close-modal').onclick=closeModal;$('modal-back').onclick=e=>{if(e.target.id==='modal-back')closeModal()};}
 function closeModal(){$('modal-root').innerHTML=''}
-function noteOptions(n){showModal('✿ Note decorations','<p>Customize this note or take it with you.</p><div class="color-row" id="color-swatches">'+colors.map(c=>'<button class="swatch '+(n.color===c?'selected':'')+'" data-color-option="'+c+'" style="background:'+({pink:'#ffd2e8',blue:'#cfe3ff',yellow:'#ffedbe',mint:'#d8f5e1',lavender:'#e6dcff'}[c])+'" aria-label="'+c+'"></button>').join('')+'</div><div class="modal-actions"><button class="btn primary" id="export-note">↓ Export .md</button><button class="btn danger" id="delete-note">♧ Delete note</button></div>');document.querySelectorAll('[data-color-option]').forEach(b=>b.onclick=()=>{updateNote(n.id,'color',b.dataset.colorOption);closeModal();renderBoard()});$('export-note').onclick=()=>download((n.title||'untitled-note').replace(/[^\w-]+/g,'-').slice(0,50)+'.md','# '+(n.title||'Untitled note')+'\n\n'+n.body,'text/markdown');$('delete-note').onclick=()=>{if(!confirm('Delete this note? This cannot be undone.'))return;notes=notes.filter(x=>x.id!==n.id);persist();closeModal();renderBoard();refreshDigest();toast('Note moved out of your notebook')}}
+function noteOptions(n){showModal('✿ Note decorations','<p>Customize this note or take it with you.</p><div class="color-row" id="color-swatches">'+colors.map(c=>'<button class="swatch '+(n.color===c?'selected':'')+'" data-color-option="'+c+'" style="background:'+({pink:'#ffd2e8',blue:'#cfe3ff',yellow:'#ffedbe',mint:'#d8f5e1',lavender:'#e6dcff'}[c])+'" aria-label="'+c+'"></button>').join('')+'</div><div class="modal-actions"><button class="btn primary" id="export-note">↓ Export .md</button><button class="btn danger" id="delete-note">♧ Delete note</button></div>');document.querySelectorAll('[data-color-option]').forEach(b=>b.onclick=()=>{updateNote(n.id,'color',b.dataset.colorOption);closeModal();renderBoard()});$('export-note').onclick=()=>download((n.title||'untitled-note').replace(/[^\w-]+/g,'-').slice(0,50)+'.md','# '+(n.title||'Untitled note')+'\n\n'+n.body,'text/markdown');$('delete-note').onclick=()=>{if(!confirm('Delete this note? This cannot be undone.'))return;notes=notes.filter(x=>x.id!==n.id);persist();closeModal();if(activeNoteId===n.id)activeNoteId=null;renderBoard();renderArchive();refreshDigest();toast('Note moved out of your notebook')}}
 function download(name,content,type='text/plain'){const blob=new Blob([content],{type:type+';charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function currentMonth(){return notes.filter(n=>monthKey(n.created)===selectedMonth).sort((a,b)=>new Date(b.created)-new Date(a.created))}
 function renderMonth(){const a=currentMonth(),words=a.reduce((sum,n)=>sum+(n.title+' '+n.body).trim().split(/\s+/).filter(Boolean).length,0),days=new Set(a.map(n=>n.created.slice(0,10))).size,tasks=a.reduce((sum,n)=>sum+tasksOf(n).length,0);$('stat-notes').textContent=a.length;$('stat-words').textContent=words.toLocaleString();$('stat-days').textContent=days;$('stat-tasks').textContent=tasks;$('monthly-intro').textContent=a.length?'Here are the themes and important details you captured this month.':'Your monthly story starts with the first note you write!';$('monthly-summary').innerHTML=digest(a,9).map(s=>'<li>'+escapeHTML(s)+'</li>').join('');const [y,m]=selectedMonth.split('-').map(Number),length=new Date(y,m,0).getDate(),counts=Array.from({length},(_,i)=>a.filter(n=>new Date(n.created).getDate()===i+1).length),peak=Math.max(1,...counts);$('timeline').innerHTML=counts.map((n,i)=>'<div class="day" data-label="'+(i+1)+': '+n+' note(s)" style="height:'+Math.max(4,Math.round(n/peak*100))+'%" role="img" aria-label="Day '+(i+1)+': '+n+' notes"></div>').join('');$('month-notes').innerHTML=a.length?a.map(n=>'<div class="month-row"><strong>'+escapeHTML(n.title||'Untitled thought')+'</strong><small>'+escapeHTML(formatDate(n.created))+' · '+escapeHTML(n.body.slice(0,85))+'</small></div>').join(''):'<div class="empty"><span style="font-size:35px">🌙</span><strong>No notes for this month</strong><p>Choose another month or write something new!</p></div>'}
@@ -345,14 +393,15 @@ $('board').addEventListener('keydown',continueBulletList);
 $('board').addEventListener('input',e=>{const nEl=e.target.closest('.note');if(!nEl)return;if(e.target.matches('.note-title'))updateNote(nEl.dataset.id,'title',e.target.value);if(e.target.matches('.note-body'))updateNote(nEl.dataset.id,'body',e.target.value)});
 $('board').addEventListener('click',e=>{const btn=e.target.closest('[data-action]');if(!btn)return;if(btn.dataset.action==='create-in-slot'){newNote();return}const n=notes.find(n=>n.id===btn.closest('.note').dataset.id);if(!n)return;const act=btn.dataset.action;if(act==='pin'){updateNote(n.id,'pinned',!n.pinned);renderBoard()}else if(act==='more')noteOptions(n);else if(act==='insights')showInsights([n],'✦ Note highlights');else if(['bullet','number','checklist'].includes(act))insertListPrefix(btn.closest('.note').querySelector('.note-body'),act);else if(act==='writing')writingAssistant(n)});
 document.querySelectorAll('[data-grid]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>{prefs.grid=+b.dataset.grid;page=0;savePrefs();renderBoard()}});
+$('archive-grid').addEventListener('click',e=>{const btn=e.target.closest('[data-open-note]');if(btn)openSavedNote(btn.dataset.openNote)});
 document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{page=0;showView(b.dataset.view)});
-$('new-btn').onclick=newNote;$('nav-new-btn').onclick=newNote;$('menu-toggle').onclick=()=>{const mobile=window.matchMedia('(max-width:730px)').matches;const isOpen=mobile?$('app-shell').classList.contains('menu-open'):!$('app-shell').classList.contains('sidebar-hidden');setNotebookMenu(!isOpen)};$('nav-backdrop').onclick=()=>setNotebookMenu(false);window.addEventListener('resize',()=>{if(!window.matchMedia('(max-width:730px)').matches){$('app-shell').classList.remove('menu-open');$('nav-backdrop').hidden=true}else{$('app-shell').classList.remove('sidebar-hidden');$('menu-toggle').setAttribute('aria-expanded',String($('app-shell').classList.contains('menu-open')))}});$('search').oninput=e=>{search=e.target.value.toLowerCase().trim();page=0;renderBoard()};$('sort').onchange=e=>{sort=e.target.value;page=0;renderBoard()};$('color-filter').onchange=e=>{colorFilter=e.target.value;page=0;renderBoard()};$('settings-btn').onclick=settings;
+$('new-btn').onclick=newNote;$('nav-new-btn').onclick=newNote;$('archive-new-btn').onclick=newNote;$('menu-toggle').onclick=()=>{const mobile=window.matchMedia('(max-width:730px)').matches;const isOpen=mobile?$('app-shell').classList.contains('menu-open'):!$('app-shell').classList.contains('sidebar-hidden');setNotebookMenu(!isOpen)};$('nav-backdrop').onclick=()=>setNotebookMenu(false);window.addEventListener('resize',()=>{if(!window.matchMedia('(max-width:730px)').matches){$('app-shell').classList.remove('menu-open');$('nav-backdrop').hidden=true}else{$('app-shell').classList.remove('sidebar-hidden');$('menu-toggle').setAttribute('aria-expanded',String($('app-shell').classList.contains('menu-open')))}});$('search').oninput=e=>{search=e.target.value.toLowerCase().trim();archivePage=0;renderArchive()};$('sort').onchange=e=>{sort=e.target.value;archivePage=0;renderArchive()};$('color-filter').onchange=e=>{colorFilter=e.target.value;archivePage=0;renderArchive()};$('notebook-month').onchange=e=>{archiveMonth=e.target.value;archivePage=0;renderArchive()};$('settings-btn').onclick=settings;
 $('ai-digest-btn').onclick=()=>showInsights([...notes].sort((a,b)=>new Date(b.updated)-new Date(a.updated)).slice(0,12),'✦ My note compilation');$('copy-digest-btn').onclick=()=>copyText(digest([...notes].sort((a,b)=>new Date(b.updated)-new Date(a.updated)).slice(0,12)).join('\n'));
 $('month-picker').onchange=e=>{if(/^\d{4}-\d{2}$/.test(e.target.value)){selectedMonth=e.target.value;renderMonth()}};$('month-export').onclick=()=>download('takenote-recap-'+selectedMonth+'.md',monthMarkdown(),'text/markdown');$('month-ai').onclick=()=>showInsights(currentMonth(),'✦ '+selectedMonth+' monthly AI recap');
 $('backup-btn').onclick=()=>download('takenote-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'TakeNote',version:1,exported:new Date().toISOString(),notes},null,2),'application/json');
-$('import-btn').onclick=()=>$('import-file').click();$('import-file').onchange=async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>5*1024*1024)throw Error('Backup must be under 5 MB');const json=JSON.parse(await file.text()),data=Array.isArray(json)?json:json.notes;if(!Array.isArray(data)||data.length>3000)throw Error('Invalid note backup');const restored=data.filter(n=>n&&typeof n.id==='string'&&typeof n.body==='string').map(n=>({id:n.id,title:String(n.title||'').slice(0,160),body:n.body.slice(0,100000),created:n.created&& !Number.isNaN(Date.parse(n.created))?n.created:new Date().toISOString(),updated:n.updated&&!Number.isNaN(Date.parse(n.updated))?n.updated:new Date().toISOString(),pinned:!!n.pinned,color:colors.includes(n.color)?n.color:'pink'}));if(!confirm('Restore '+restored.length+' notes? This replaces all notes currently saved in this browser. Export a backup first if needed.'))return;notes=restored;persist();renderMonth();refreshDigest();toast('Your notes are restored ♡')}catch(err){toast('Could not restore: '+err.message)}};
+$('import-btn').onclick=()=>$('import-file').click();$('import-file').onchange=async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>5*1024*1024)throw Error('Backup must be under 5 MB');const json=JSON.parse(await file.text()),data=Array.isArray(json)?json:json.notes;if(!Array.isArray(data)||data.length>3000)throw Error('Invalid note backup');const restored=data.filter(n=>n&&typeof n.id==='string'&&typeof n.body==='string').map(n=>({id:n.id,title:String(n.title||'').slice(0,160),body:n.body.slice(0,100000),created:n.created&& !Number.isNaN(Date.parse(n.created))?n.created:new Date().toISOString(),updated:n.updated&&!Number.isNaN(Date.parse(n.updated))?n.updated:new Date().toISOString(),pinned:!!n.pinned,color:colors.includes(n.color)?n.color:'pink'}));if(!confirm('Restore '+restored.length+' notes? This replaces all notes currently saved in this browser. Export a backup first if needed.'))return;notes=restored;activeNoteId=null;page=0;archivePage=0;persist();renderMonth();renderArchive();renderBoard();refreshDigest();toast('Your notes are restored ♡')}catch(err){toast('Could not restore: '+err.message)}};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeNotebookMenu()}if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();showView('notes');$('search').focus()}});
-renderDailyQuote();setInterval(renderDailyQuote,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderDailyQuote()});load();$('month-picker').value=selectedMonth;renderBoard();refreshDigest();$('menu-toggle').setAttribute('aria-expanded',String(!window.matchMedia('(max-width:730px)').matches));
+renderDailyQuote();setInterval(renderDailyQuote,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderDailyQuote()});load();$('month-picker').value=selectedMonth;showView('notebook');refreshDigest();$('menu-toggle').setAttribute('aria-expanded',String(!window.matchMedia('(max-width:730px)').matches));
 })();
 </script>
 </body></html>
