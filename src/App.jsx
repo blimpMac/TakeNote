@@ -7,6 +7,7 @@ import {
   Pin, Trash2, Smile, ListTodo, Cloud, Send, Copy, ArrowLeft
 } from 'lucide-react';
 import NotePad from './components/NotePad.jsx';
+import {localDateKey,periodRange,shiftPeriodAnchor,notesForPeriod,interpretPeriodNotes,activityForPeriod,periodMarkdown} from './lib/insights.js';
 import AiPanel, {AiSettings} from './components/AiPanel.jsx';
 import {
  STORAGE_KEY, PREF_KEY, COLORS, QUOTES, id, newNote, normalizeNotes, loadNotes,
@@ -76,7 +77,11 @@ export default function App() {
  const [query,setQuery]=useState('');
  const [sort,setSort]=useState('updated');
  const [colorFilter,setColorFilter]=useState('all');
- const [recapMonth,setRecapMonth]=useState(monthKey(new Date()));
+ const [insightPeriod,setInsightPeriod]=useState('month');
+ const [insightAnchor,setInsightAnchor]=useState(()=>localDateKey());
+ const [insightBasis,setInsightBasis]=useState('created');
+ const [insightQuery,setInsightQuery]=useState('');
+ const [insightVisibleLimit,setInsightVisibleLimit]=useState(12);
  const [activeId,setActiveId]=useState(null);
  const [savedWindowId,setSavedWindowId]=useState(null);
  const [aiNoteId,setAiNoteId]=useState(null);
@@ -147,28 +152,27 @@ export default function App() {
  const capacity=layout*layout,writerMaxPage=Math.max(0,Math.ceil(writerNotes.length/capacity)-1);
  const safePage=Math.min(page,writerMaxPage);
  const visibleWriter=writerNotes.slice(safePage*capacity,(safePage+1)*capacity);
- const recapNotes=useMemo(()=>notes.filter(n=>monthKey(n.created)===recapMonth).sort((a,b)=>new Date(b.created)-new Date(a.created)),[notes,recapMonth]);
- const recapStats=useMemo(()=>{
-  const count=recapNotes.length;
-  const words=recapNotes.reduce((sum,n)=>sum+wordCount(n.title+' '+n.body),0);
-  const days=new Set(recapNotes.map(n=>new Date(n.created).toDateString())).size;
-  const tasks=recapNotes.reduce((sum,n)=>sum+taskLines(n.body).length,0);
-  return {count,words,days,tasks};
- },[recapNotes]);
+ const periodInfo=useMemo(()=>periodRange(insightPeriod,insightAnchor),[insightPeriod,insightAnchor]);
+ const periodNotes=useMemo(()=>{
+  const base=notesForPeriod(notes,insightPeriod,insightAnchor,insightBasis);
+  const q=insightQuery.toLocaleLowerCase().trim();
+  return q?base.filter(n=>(n.title+' '+n.body).toLocaleLowerCase().includes(q)):base;
+ },[notes,insightPeriod,insightAnchor,insightBasis,insightQuery]);
+ const insights=useMemo(()=>interpretPeriodNotes(periodNotes,insightBasis),[periodNotes,insightBasis]);
+ const periodActivity=useMemo(()=>activityForPeriod(periodNotes,insightPeriod,insightAnchor,insightBasis),[periodNotes,insightPeriod,insightAnchor,insightBasis]);
+ const maxActivity=Math.max(1,...periodActivity.map(x=>x.count));
+ const openTaskCount=insights.tasks.filter(t=>!t.done).length;
+ useEffect(()=>setInsightVisibleLimit(12),[insightPeriod,insightAnchor,insightBasis,insightQuery]);
  const noteWindow=notes.find(n=>n.id===savedWindowId);
- const syntheticMonth=aiNoteId==='__recap__'?{id:'__recap__',title:'Monthly recap',body:recapNotes.map(n=>'## '+(n.title||'Untitled')+'\n'+n.body).join('\n\n---\n').slice(0,14000)}:null;
- const aiNote=syntheticMonth||notes.find(n=>n.id===aiNoteId);
+ const syntheticPeriod=aiNoteId==='__insights__'?{id:'__insights__',title:'Insights — '+periodInfo.label,body:periodNotes.map(n=>'## '+(n.title||'Untitled')+'\n'+n.body).join('\n\n---\n').slice(0,14000)}:null;
+ const aiNote=syntheticPeriod||notes.find(n=>n.id===aiNoteId);
  function applyAI(noteId,body){
-  if(noteId==='__recap__'){const item=newNote(notes.length);item.title='Monthly recap — '+monthLabel(recapMonth);item.body=body;setNotes(prev=>[item,...prev]);notify('Saved your AI recap as a new note ♡');return}
+  if(noteId==='__insights__'){const item=newNote(notes.length);item.title='AI insights — '+periodInfo.label;item.body=body;setNotes(prev=>[item,...prev]);notify('Saved your AI insights as a new note ♡');return}
   changeNote(noteId,'body',body);notify('Approved AI suggestion saved ♡');
  }
  function exportNote(note){downloadFile((note.title||'untitled-note').replace(/[^\w-]+/g,'-').slice(0,45)+'.md',exportMarkdown(note),'text/markdown')}
- function exportRecap(){downloadFile('takenote-'+recapMonth+'-recap.md',monthMarkdown(recapNotes,recapMonth),'text/markdown')}
+ function exportRecap(){downloadFile('takenote-'+insightPeriod+'-'+insightAnchor+'-insights.md',periodMarkdown({period:insightPeriod,anchor:insightAnchor,basis:insightBasis,notes:periodNotes,insights}),'text/markdown')}
  function openSavedNote(noteId){setSavedWindowId(noteId);setSidebarOpen(false);}
- const year=Number(recapMonth.split('-')[0]),monthNum=Number(recapMonth.split('-')[1]);
- const dayCount=new Date(year,monthNum,0).getDate();
- const perDay=Array.from({length:dayCount},(_,i)=>recapNotes.filter(n=>new Date(n.created).getDate()===i+1).length);
- const maxDay=Math.max(1,...perDay);
  function NavButton({label,icon:Icon,active,action,primary=false}) {return <button className={'nav-button '+(active?'nav-active ':'')+(primary?'nav-primary':'')} onClick={action}><Icon size={18}/><span>{label}</span>{active&&<span className="nav-dot" aria-hidden="true"/>}</button>}
  return (
  <div className={'app-shell flex min-h-screen '+(sidebarCollapsed?'desktop-sidebar-hidden':'')}>
@@ -178,7 +182,7 @@ export default function App() {
    <nav className="flex flex-col gap-2">
     <NavButton label="New note" icon={Plus} primary active={view==='write'} action={createNote}/>
     <NavButton label="My notes" icon={BookOpen} active={view==='notes'} action={()=>navigate('notes')}/>
-    <NavButton label="Monthly recap" icon={LayoutDashboard} active={view==='dashboard'} action={()=>navigate('dashboard')}/>
+    <NavButton label="Notes insights" icon={LayoutDashboard} active={view==='dashboard'} action={()=>navigate('dashboard')}/>
     <NavButton label="Pinned notes" icon={Heart} active={view==='pinned'} action={()=>navigate('pinned')}/>
    </nav>
    <div className="mt-auto side-bottom">
@@ -193,7 +197,7 @@ export default function App() {
      <div className="flex items-center gap-3">
       <button className="hamburger" aria-label="Toggle navigation" aria-expanded={sidebarOpen} onClick={()=>{if(window.matchMedia('(max-width:760px)').matches)setSidebarOpen(x=>!x);else setSidebarCollapsed(x=>!x)}}><Menu size={20}/></button>
       <div className="mobile-brand" aria-label="TakeNote"><span className="mobile-logo-icon"><PixelMark size={21}/></span><span>TakeNote</span></div>
-      <div className="breadcrumb text-xs font-extrabold">my little corner <span className="mx-2">/</span> <span className="breadcrumb-current">{view==='write'?'writing desk':view==='dashboard'?'monthly recap':view==='pinned'?'pinned notes':'my notes'}</span></div>
+      <div className="breadcrumb text-xs font-extrabold">my little corner <span className="mx-2">/</span> <span className="breadcrumb-current">{view==='write'?'writing desk':view==='dashboard'?'notes insights':view==='pinned'?'pinned notes':'my notes'}</span></div>
      </div>
      <div className="flex gap-2 items-center justify-end">
        <span className="saved-indicator hidden sm:inline-flex items-center gap-2"><span className="saved-dot"/>{storageOk?'saved locally':'backup recommended'}</span>
@@ -236,21 +240,65 @@ export default function App() {
       <div className="archive-help flex items-center gap-3 mt-6"><ShieldCheck size={20}/><p>Notes stay in this browser. You can edit saved notes inside TakeNote without opening another tab. Use Backup to keep a separate copy.</p></div>
      </>}
 
+
      {view==='dashboard'&&<>
-      <GroupTitle kicker="✦ YOUR MONTH IN WORDS" title="Monthly scrapbook" subtitle="A cozy compilation of all the little things you thought about." actions={<><input type="month" className="month-picker" value={recapMonth} onChange={e=>setRecapMonth(e.target.value)} aria-label="Recap month"/><button className="ui-btn ui-btn-pink" onClick={()=>setAiNoteId('__recap__')} disabled={!recapNotes.length}><WandSparkles size={16}/> AI recap</button><button className="ui-btn ui-btn-soft" onClick={exportRecap}><Download size={16}/> Export</button></>}/>
+      <GroupTitle kicker="✦ AUTO-COMPILED NOTES" title="Notes insights" subtitle="Discover important details from a day, week, month or year — automatically and without an AI key." actions={<>
+       <button className="ui-btn ui-btn-pink" onClick={()=>setAiNoteId('__insights__')} disabled={!periodNotes.length}><WandSparkles size={16}/> Deeper AI recap</button>
+       <button className="ui-btn ui-btn-soft" onClick={exportRecap} disabled={!periodNotes.length}><Download size={16}/> Export insights</button>
+      </>}/>
+      <div className="insight-filter-bar" aria-label="Notes insights filters">
+       <div className="insight-period-switch" role="group" aria-label="Group notes by period">
+        {['day','week','month','year'].map(p=><button key={p} type="button" className={insightPeriod===p?'selected':''} aria-pressed={insightPeriod===p} onClick={()=>setInsightPeriod(p)}>{p[0].toUpperCase()+p.slice(1)}</button>)}
+       </div>
+       <div className="insight-date-nav">
+        <button type="button" className="insight-arrow" aria-label="Previous period" title="Previous period" onClick={()=>setInsightAnchor(p=>shiftPeriodAnchor(insightPeriod,p,-1))}><ChevronLeft size={17}/></button>
+        {insightPeriod==='year'
+         ?<input className="insight-date-input insight-year" aria-label="Choose year" type="number" min="2000" max="2100" value={Number(insightAnchor.slice(0,4))} onChange={e=>{const y=Number(e.target.value);if(Number.isInteger(y)&&y>=2000&&y<=2100)setInsightAnchor(y+'-01-01')}}/>
+         :<input className="insight-date-input" aria-label={insightPeriod==='month'?'Choose month':'Choose date in selected '+insightPeriod} type={insightPeriod==='month'?'month':'date'} value={insightPeriod==='month'?insightAnchor.slice(0,7):insightAnchor} onChange={e=>{if(e.target.value)setInsightAnchor(insightPeriod==='month'?e.target.value+'-01':e.target.value)}}/>}
+        <button type="button" className="insight-arrow" aria-label="Next period" title="Next period" onClick={()=>setInsightAnchor(p=>shiftPeriodAnchor(insightPeriod,p,1))}><ChevronRight size={17}/></button>
+        <button type="button" className="insight-today" onClick={()=>setInsightAnchor(localDateKey())}>Current</button>
+       </div>
+       <label className="insight-field"><span>Date</span><select aria-label="Filter by date created or last edited" value={insightBasis} onChange={e=>setInsightBasis(e.target.value)}><option value="created">Created</option><option value="updated">Last edited</option></select></label>
+       <label className="insight-search"><Search size={15}/><input type="search" aria-label="Search within selected period" placeholder="Search in this period..." value={insightQuery} onChange={e=>setInsightQuery(e.target.value)}/></label>
+      </div>
+      <div className="insight-period-caption"><CalendarDays size={15}/><strong>{periodInfo.label}</strong><span>· {insightBasis==='created'?'By creation date':'By last-edited date'} · {insightQuery?'Search applied':'All matching notes'}</span></div>
       <div className="stats-grid">
-       <Stat icon={FileText} value={recapStats.count} label="NOTES WRITTEN" color="stat-blue"/>
-       <Stat icon={PenLine} value={recapStats.words.toLocaleString()} label="WORDS CAPTURED" color="stat-pink"/>
-       <Stat icon={CalendarDays} value={recapStats.days} label="ACTIVE DAYS" color="stat-purple"/>
-       <Stat icon={ListTodo} value={recapStats.tasks} label="MARKED TASKS" color="stat-green"/>
+       <Stat icon={FileText} value={insights.count} label="NOTES" color="stat-blue"/>
+       <Stat icon={PenLine} value={insights.words.toLocaleString()} label="WORDS" color="stat-pink"/>
+       <Stat icon={CalendarDays} value={insights.activeDays} label="WRITING DAYS" color="stat-purple"/>
+       <Stat icon={ListTodo} value={openTaskCount} label="OPEN TASKS" color="stat-green"/>
       </div>
-      <div className="bottom-panels grid grid-cols-1 lg:grid-cols-2 gap-5">
-       <section className="content-panel"><div className="panel-title"><Sparkles size={18}/> The month in little words</div><p className="panel-sub">A summary from notes written in {monthLabel(recapMonth)}.</p><ul className="digest-list">{digest(recapNotes,9).map((x,i)=><li key={i}>{x}</li>)}</ul></section>
-       <section className="content-panel"><div className="panel-title"><CalendarDays size={18}/> Your writing days</div><p className="panel-sub">Notes created on each day of the selected month.</p><div className="activity-bars">{perDay.map((count,i)=><div key={i} className="activity-bar" style={{height:Math.max(4,(count/maxDay)*100)+'%'}} title={'Day '+(i+1)+': '+count+' note(s)'} aria-label={'Day '+(i+1)+': '+count+' notes'} role="img"/>)}</div></section>
+      <section className="insight-overview animate-rise" aria-labelledby="insight-overview-heading">
+       <div className="insight-overview-head"><h3 id="insight-overview-heading"><Sparkles size={18}/> Automatic interpretation</h3><span className="insight-offline-mark">✧ Auto-updated · no API key</span></div>
+       <p>{insights.overview}</p>
+       {insights.themes.length>0&&<div className="insight-theme-line"><span>Frequent terms</span>{insights.themes.map(topic=><button type="button" key={topic.name} className="insight-theme" title="Filter period notes by this term" onClick={()=>setInsightQuery(topic.name)}>{topic.name}</button>)}</div>}
+      </section>
+      <div className="insight-detail-grid">
+       <section className="content-panel insight-detail-panel">
+        <div className="panel-title"><Sparkles size={18}/> Key highlights</div>
+        <p className="panel-sub">Important lines and main ideas found in your notes.</p>
+        {insights.highlights.length?<div className="insight-excerpt-list">{insights.highlights.map((item,i)=><button key={item.noteId+'-'+i} type="button" className="insight-excerpt" title={'Open '+item.noteName} onClick={()=>openSavedNote(item.noteId)}><span className="insight-excerpt-icon">✧</span><span>{item.text}<small>{item.noteName}</small></span></button>)}</div>:<p className="insight-empty">No highlights identified for this period.</p>}
+        {insights.dates.length>0&&<><div className="insight-subheading"><CalendarDays size={15}/> Dates mentioned</div><div className="insight-excerpt-list">{insights.dates.map((item,i)=><button key={item.noteId+'-'+i} className="insight-excerpt" type="button" onClick={()=>openSavedNote(item.noteId)}>{item.text}</button>)}</div></>}
+       </section>
+       <section className="content-panel insight-detail-panel">
+        <div className="panel-title"><ListTodo size={18}/> Tasks & decisions</div>
+        <p className="panel-sub">Items explicitly written in the selected notes.</p>
+        {insights.tasks.length?<div className="insight-excerpt-list">{insights.tasks.map((item,i)=><button key={item.noteId+'-'+i} type="button" className="insight-excerpt" onClick={()=>openSavedNote(item.noteId)}><span className={item.done?'insight-task-done':'insight-task-open'}>{item.done?'☑':'☐'}</span><span>{item.text}<small>{item.noteName}{item.done?' · completed':''}</small></span></button>)}</div>:<p className="insight-empty">No explicit to-dos found. Try writing “TODO:” or “- [ ]” in a note.</p>}
+        <div className="insight-subheading"><Check size={15}/> Decisions</div>
+        {insights.decisions.length?<div className="insight-excerpt-list">{insights.decisions.map((item,i)=><button key={item.noteId+'-'+i} type="button" className="insight-excerpt" onClick={()=>openSavedNote(item.noteId)}><span>◆</span><span>{item.text}<small>{item.noteName}</small></span></button>)}</div>:<p className="insight-empty">No decisions recorded with words like “decided” or “approved.”</p>}
+       </section>
       </div>
-      <GroupTitle kicker="♡ MONTHLY COLLECTION" title="Notes written this month" actions={<><button className="ui-btn ui-btn-soft" onClick={saveNotesBackup}><Download size={16}/> Backup JSON</button><button className="ui-btn ui-btn-soft" onClick={()=>importRef.current?.click()}><Upload size={16}/> Restore</button></>}/>
-      {recapNotes.length?<div className="archive-grid">{recapNotes.map(note=><SavedCard key={note.id} note={note} onClick={()=>openSavedNote(note.id)}/>)}</div>:<div className="empty-archive"><CalendarDays size={42}/><h3>Nothing written this month</h3><p>Select another month or create a new note.</p><button className="ui-btn ui-btn-pink" onClick={createNote}>＋ New note</button></div>}
+      <section className="content-panel insight-activity-panel">
+       <div className="panel-title"><CalendarDays size={18}/> Writing activity · {periodInfo.label}</div>
+       <p className="panel-sub">Count of notes {insightBasis==='created'?'created':'last edited'} in each {insightPeriod==='day'?'4-hour block':insightPeriod==='week'?'day':insightPeriod==='month'?'day':'month'}.</p>
+       <div className="activity-bars" role="group" aria-label="Writing activity chart">{periodActivity.map((point,i)=><div key={i} className="activity-bar" style={{height:Math.max(4,(point.count/maxActivity)*100)+'%'}} title={point.label+': '+point.count+' note(s)'} aria-label={point.label+': '+point.count+' notes'} role="img"/>)}</div>
+      </section>
+      <GroupTitle kicker="♡ NOTES IN THIS PERIOD" title={'Saved notes · '+periodInfo.label} subtitle={'Showing '+Math.min(periodNotes.length,insightVisibleLimit)+' of '+periodNotes.length+' notes'} actions={<><button className="ui-btn ui-btn-soft" onClick={saveNotesBackup}><Download size={15}/> Backup JSON</button><button className="ui-btn ui-btn-soft" onClick={()=>importRef.current?.click()}><Upload size={15}/> Restore</button></>}/>
+      {periodNotes.length?<div className="archive-grid">{periodNotes.slice(0,insightVisibleLimit).map(note=><SavedCard key={note.id} note={note} onClick={()=>openSavedNote(note.id)}/>)}</div>:<div className="empty-archive"><CalendarDays size={42}/><h3>No matching notes</h3><p>Try a different date, switch between Created and Last edited, or clear your search filter.</p><button className="ui-btn ui-btn-pink" onClick={createNote}><Plus size={15}/> Write a note</button></div>}
+      {insightVisibleLimit<periodNotes.length&&<div className="page-controls"><button type="button" onClick={()=>setInsightVisibleLimit(n=>n+12)}>Show 12 more notes <ChevronRight size={16}/></button></div>}
+      <p className="insight-method-note">Insights are extracted from your notes on this device, not generated or inferred by AI. They refresh as you write. For a more natural-language interpretation, choose “Deeper AI recap” (hosted AI setup required).</p>
      </>}
+
     </main>
    </div>
   </div>
@@ -270,7 +318,7 @@ export default function App() {
     </div>
    </section>
   </div>}
-  {aiNote&&<AiPanel key={aiNote.id} note={aiNote} config={aiConfig} apiKey={apiKey} onClose={()=>setAiNoteId(null)} onApply={applyAI} onSettings={()=>setSettingsOpen(true)}/>}
+  {aiNote&&<AiPanel key={aiNote.id} note={aiNote} initialMode={aiNote.id==='__insights__'?'summarize':'proofread'} config={aiConfig} apiKey={apiKey} onClose={()=>setAiNoteId(null)} onApply={applyAI} onSettings={()=>setSettingsOpen(true)}/>}
   {settingsOpen&&<AiSettings config={aiConfig} apiKey={apiKey} onSave={saveAISettings} onClose={()=>setSettingsOpen(false)}/>}
   {toast&&<div className="toast-message" role="status"><Sparkles size={15}/> {toast}</div>}
  </div>
