@@ -8,15 +8,15 @@ const MODES=[
   {id:'organize',label:'Reconstruct notes',hint:'Organize sentences, headings and action points.'},
   {id:'summarize',label:'Key details',hint:'Compile decisions, dates, to-dos and highlights.'},
 ];
-export default function AiPanel({note, config, apiKey, onClose, onApply, onSettings}) {
- const [mode,setMode]=useState('proofread');
+export default function AiPanel({note, config, apiKey, onClose, onApply, onSettings, initialMode='proofread'}) {
+ const [mode,setMode]=useState(initialMode);
  const [result,setResult]=useState(null);
  const [proposal,setProposal]=useState('');
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
  const [original,setOriginal]=useState(note?.body||'');
  const [sourceNoteId,setSourceNoteId]=useState(note?.id);
- useEffect(()=>{setOriginal(note?.body||'');setSourceNoteId(note?.id);setResult(null);setProposal('');setError('')},[note?.id]);
+ useEffect(()=>{setOriginal(note?.body||'');setSourceNoteId(note?.id);setResult(null);setProposal('');setError('');setMode(initialMode)},[note?.id,initialMode]);
  useEffect(()=>{const fn=e=>{if(e.key==='Escape'&&!busy)onClose()};window.addEventListener('keydown',fn);return()=>window.removeEventListener('keydown',fn)},[busy,onClose]);
  if(!note)return null;
  async function generate() {
