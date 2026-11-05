@@ -25,6 +25,10 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 @media(max-width:1050px){.sidebar{width:205px}.main{padding:0 23px 40px}.board[data-grid="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-art{font-size:58px}}
 @media(max-width:730px){.app{display:block}.sidebar{width:100%;height:auto;position:static;padding:13px 16px;gap:10px;border-right:0;border-bottom:2px solid #e4dcf1}.brand{font-size:13px}.side-label,.side-bottom{display:none}.nav{flex-direction:row;overflow:auto}.nav button{padding:8px 10px;white-space:nowrap;font-size:11px}.nav-icon{font-size:14px;width:auto}.main{padding:0 14px 40px}.topbar{min-height:59px}.hero{padding:22px 17px;min-height:145px;margin-top:19px}.hero h1{font-size:15px}.hero p{font-size:12px}.hero-art{font-size:44px}.section-bar{margin-top:25px}.board,.board[data-grid="4"]{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.note{min-height:250px}.note-title{font-size:13px}.note-body{font-size:12px}.note-head{padding:9px 9px 3px}.note-title,.note-body{margin-left:10px;margin-right:10px;width:calc(100% - 20px)}.note-foot{margin:0 9px;flex-wrap:wrap}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.panels{grid-template-columns:1fr}.status{display:none}.right-tools{gap:6px}.toolbar{gap:8px}}
 @media(max-width:420px){.board,.board[data-grid="4"]{grid-template-columns:1fr}.hero-art{display:none}.seg button{padding:8px}.actions{width:100%}.section-bar h2{font-size:13px}.month-notes{grid-template-columns:1fr}}
+
+/* Keep navigation and cloud actions readable on narrow screens. */
+@media(max-width:900px){.topbar{flex-wrap:wrap;padding:10px 0;min-height:68px}.right-tools{flex-wrap:wrap;justify-content:flex-end}.right-tools .btn{padding:8px 10px;min-height:36px;font-size:11px}}
+@media(max-width:480px){.topbar{align-items:flex-start}.crumb{font-size:11px}.right-tools{width:100%;justify-content:flex-start;gap:7px}.right-tools .btn{flex:1;min-width:0;white-space:normal;text-align:center}.right-tools .avatar{display:none}.toolbar .filter{max-width:100%;min-width:0;flex:1}.hero{min-height:130px}}
 </style>
 </head>
 <body>
