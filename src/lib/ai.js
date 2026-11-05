@@ -79,16 +79,16 @@ async function useBrowserModel(prompt) {
   try { return String(await session.prompt(prompt) || '').trim(); }
   finally { try { session.destroy?.(); } catch {} }
 }
-async function useOpenRouter(prompt,key,model) {
+async function useOpenRouter(text,mode,key,model) {
   if (!key?.trim()) throw Error('Add a free OpenRouter API key in AI settings first.');
-  const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+  const response=await fetch('/api/ai',{
     method:'POST',
-    headers:{'Authorization':'Bearer '+key.trim(),'Content-Type':'application/json','X-Title':'TakeNote Pixel Edition'},
-    body:JSON.stringify({model:model||'openrouter/free',messages:[{role:'user',content:prompt}],max_tokens:1500,temperature:0.15})
+    headers:{'x-openrouter-key':key.trim(),'Content-Type':'application/json'},
+    body:JSON.stringify({text,mode,model:model||'openrouter/free'})
   });
   const data=await response.json().catch(()=>({}));
-  if (!response.ok) throw Error(data?.error?.message || 'OpenRouter error '+response.status);
-  return modelText(data).trim();
+  if (!response.ok) throw Error(data?.error || 'Free AI request failed ('+response.status+').');
+  return String(data?.result||'').trim();
 }
 async function useOllama(prompt,endpoint,model) {
   const server=new URL(endpoint||'http://localhost:11434');
@@ -112,11 +112,11 @@ export async function runWritingAssistant({text,mode,provider,key,model,endpoint
     try { output=await useBrowserModel(prompt);engine='Browser AI (on-device)'; }
     catch(err) {
       if(provider==='browser') throw err;
-      if(key) { output=await useOpenRouter(prompt,key,'openrouter/free');engine='OpenRouter free'; }
+      if(key) { output=await useOpenRouter(text,mode,key,'openrouter/free');engine='OpenRouter free'; }
       else return offlineSuggestion(text,mode);
     }
   } else if(provider==='openrouter') {
-    output=await useOpenRouter(prompt,key,model||'openrouter/free');engine='OpenRouter free';
+    output=await useOpenRouter(text,mode,key,model||'openrouter/free');engine='OpenRouter free';
   } else if(provider==='ollama') {
     output=await useOllama(prompt,endpoint,model||'gemma3:1b');engine='Ollama local';
   } else return offlineSuggestion(text,mode);
