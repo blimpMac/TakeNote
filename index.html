@@ -140,11 +140,37 @@ function tasksOf(n){return (n.body||'').split('\n').filter(x=>/^\s*(?:[-*]\s*)?(
 function sentences(s){return (s||'').replace(/\s+/g,' ').split(/(?<=[.!?])\s+|\s*[\n•]+\s*/).map(x=>x.trim()).filter(x=>x.length>12)}
 function digest(arr,limit=5){if(!arr.length)return ['Nothing here yet. Create a note and let your ideas bloom ♡'];let out=[],seen=new Set();for(const n of arr){for(const t of tasksOf(n)){const v='☐ '+t;if(!seen.has(v)){out.push(v);seen.add(v)}}}for(const n of arr){const t=n.title.trim()||'Untitled thought',s=sentences(n.body).find(s=>s.length>18)||n.body.trim().slice(0,125);const v=t+(s?' — '+s.slice(0,140):'');if(!seen.has(v)){out.push(v);seen.add(v)}}return out.slice(0,limit)}
 function filtered(){let a=notes.filter(n=>(view!=='favorites'||n.pinned)&&(!search||(n.title+' '+n.body).toLowerCase().includes(search))&&(colorFilter==='all'||n.color===colorFilter));a.sort((a,b)=>(Number(b.pinned)-Number(a.pinned))|| (sort==='title'?a.title.localeCompare(b.title):new Date(sort==='created'?b.created:b.updated)-new Date(sort==='created'?a.created:a.updated)));return a}
-function renderBoard(){const all=filtered(),size=prefs.grid*prefs.grid,max=Math.max(0,Math.ceil(all.length/size)-1);page=Math.min(page,max);$('board').dataset.grid=String(prefs.grid);document.querySelectorAll('[data-grid]').forEach(b=>{if(b.tagName==='BUTTON'){b.classList.toggle('active',+b.dataset.grid===prefs.grid);b.setAttribute('aria-pressed',String(+b.dataset.grid===prefs.grid))}});$('notes-subtitle').textContent=notes.length+' saved note'+(notes.length===1?'':'s')+' ✦ '+(view==='favorites'?'Pinned favorites':'Write something lovely today');const batch=all.slice(page*size,(page+1)*size);
-$('board').innerHTML=batch.map(n=>'<article class="note" data-id="'+escapeHTML(n.id)+'" data-color="'+n.color+'"><div class="note-head"><span class="tag">'+(n.pinned?'★ PINNED':'✿ '+n.color.toUpperCase())+'</span><div class="note-icons"><button class="icon-btn" data-action="pin" title="'+(n.pinned?'Unpin':'Pin')+'" aria-label="'+(n.pinned?'Unpin':'Pin')+'">'+(n.pinned?'★':'☆')+'</button><button class="icon-btn" data-action="more" aria-label="Note options" title="Note options">⋯</button></div></div><input class="note-title" aria-label="Note title" placeholder="A little thought..." maxlength="160" value="'+escapeHTML(n.title)+'"><textarea class="note-body" aria-label="Note content" placeholder="Dear diary, today I...">'+escapeHTML(n.body)+'</textarea><div class="note-foot"><span class="note-date">'+escapeHTML(formatDate(n.updated))+' · '+n.body.trim().split(/\s+/).filter(Boolean).length+' words</span><button data-action="insights" type="button">✧ Highlights</button></div></article>').join('')+(all.length<size?' <button type="button" class="add-note" id="inline-add"><span>＋</span> new little note ♡</button>':'');
-if(!all.length){$('board').innerHTML='<div class="empty"><span style="font-size:43px">🧸</span><strong>No notes found yet</strong><p>Start a fresh page or change your filters.</p><button type="button" class="btn pink" id="empty-add">＋ Create note</button></div>'}
-$('pagination').innerHTML=all.length>size?'<button type="button" id="prev-page" '+(page===0?'disabled':'')+'>‹ Prev</button><span>Page '+(page+1)+' / '+(max+1)+'</span><button type="button" id="next-page" '+(page===max?'disabled':'')+'>Next ›</button>':'';
-$('inline-add')?.addEventListener('click',newNote);$('empty-add')?.addEventListener('click',newNote);$('prev-page')?.addEventListener('click',()=>{page--;renderBoard()});$('next-page')?.addEventListener('click',()=>{page++;renderBoard()})}
+
+function renderBoard(){
+ const all=filtered(),capacity=prefs.grid*prefs.grid,max=Math.max(0,Math.ceil(all.length/capacity)-1);
+ page=Math.min(page,max);
+ $('board').dataset.grid=String(prefs.grid);
+ document.querySelectorAll('[data-grid]').forEach(b=>{if(b.tagName==='BUTTON'){b.classList.toggle('active',+b.dataset.grid===prefs.grid);b.setAttribute('aria-pressed',String(+b.dataset.grid===prefs.grid))}});
+ $('notes-subtitle').textContent=notes.length+' saved note'+(notes.length===1?'':'s')+' ✦ '+(view==='favorites'?'Pinned favorites':'Write something lovely today');
+ const batch=all.slice(page*capacity,(page+1)*capacity);
+ const tools='<div class="editor-tools" aria-label="List formatting and writing help"><button type="button" data-action="bullet">• Bullets</button><button type="button" data-action="number">1. Numbers</button><button type="button" data-action="checklist">☐ Tasks</button><button type="button" data-action="writing">✧ AI edit</button></div>';
+ const cards=batch.map(n=>
+  '<article class="note" data-id="'+escapeHTML(n.id)+'" data-color="'+n.color+'">'+
+  '<div class="note-head"><span class="tag">'+(n.pinned?'★ PINNED':'✿ '+n.color.toUpperCase())+'</span><div class="note-icons">'+
+  '<button type="button" class="icon-btn" data-action="pin" title="'+(n.pinned?'Unpin':'Pin')+'" aria-label="'+(n.pinned?'Unpin':'Pin')+'">'+(n.pinned?'★':'☆')+'</button>'+
+  '<button type="button" class="icon-btn" data-action="more" aria-label="Note options" title="Note options">⋯</button></div></div>'+
+  '<input class="note-title" aria-label="Note title" placeholder="A little thought..." maxlength="160" value="'+escapeHTML(n.title)+'" spellcheck="true" autocorrect="off">'+
+  '<textarea class="note-body" aria-label="Note content" placeholder="Start typing your thoughts here..." spellcheck="true" autocorrect="off">'+escapeHTML(n.body)+'</textarea>'+
+  tools+
+  '<div class="note-foot"><span class="note-date">'+escapeHTML(formatDate(n.updated))+' · '+n.body.trim().split(/\s+/).filter(Boolean).length+' words</span><button type="button" data-action="insights">✧ Highlights</button></div></article>'
+ );
+ const showEmptySlots=view==='notes'&&!search&&colorFilter==='all';
+ if(showEmptySlots)while(cards.length<capacity){
+  const slot=page*capacity+cards.length+1;
+  cards.push('<button type="button" class="note empty-slot" data-action="create-in-slot" aria-label="Start a new note in slot '+slot+'"><span class="slot-heading">✿ NOTE '+slot+'</span><span class="slot-body" aria-hidden="true"></span><span class="slot-hint">＋ Click to start writing</span></button>');
+ }
+ if(!cards.length)cards.push('<div class="empty"><span style="font-size:37px">🧸</span><strong>No notes found</strong><p>Change your filters or open a new note from the menu.</p></div>');
+ $('board').innerHTML=cards.join('');
+ $('pagination').innerHTML=all.length>capacity?'<button type="button" id="prev-page" '+(page===0?'disabled':'')+'>‹ Prev</button><span>Page '+(page+1)+' / '+(max+1)+'</span><button type="button" id="next-page" '+(page===max?'disabled':'')+'>Next ›</button>':'';
+ $('prev-page')?.addEventListener('click',()=>{page--;renderBoard()});
+ $('next-page')?.addEventListener('click',()=>{page++;renderBoard()});
+}
+
 function refreshDigest(){const d=digest([...notes].sort((a,b)=>new Date(b.updated)-new Date(a.updated)).slice(0,12));$('quick-summary').innerHTML=d.map(x=>'<li>'+escapeHTML(x)+'</li>').join('');$('productivity').textContent='You have '+notes.length+' little note'+(notes.length===1?'':'s')+', '+notes.filter(n=>n.pinned).length+' pinned favorite'+(notes.filter(n=>n.pinned).length===1?'':'s')+', and '+notes.reduce((a,n)=>a+tasksOf(n).length,0)+' marked task(s) in your notebook. Keep collecting the little wins!'}
 function newNote(){const n=createNote();view='notes';search='';colorFilter='all';$('search').value='';$('color-filter').value='all';page=0;showView('notes');renderBoard();refreshDigest();const el=$('board').querySelector('[data-id="'+n.id+'"] .note-title');el?.focus();toast('A fresh page, just for you ♡')}
 function showView(v){view=v;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===v));$('notes-view').classList.toggle('hidden',v==='dashboard');$('dashboard-view').classList.toggle('hidden',v!=='dashboard');$('crumb-view').textContent=v==='dashboard'?'monthly recap':v==='favorites'?'pinned notes':'notebook';if(v==='dashboard')renderMonth();else renderBoard()}
