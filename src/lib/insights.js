@@ -80,7 +80,7 @@ export function interpretPeriodNotes(notes,basis='created'){
   for(const line of lines.slice(0,250)){
    const cleaned=cleanContent(line);
    if(cleaned.length<3)continue;
-   if(marker.test(line))tasks.push({text:cleaned,noteId:n.id,noteName,done:/^\s*(?:[-*•]\s*)?\[[xX]\]/.test(line)});
+   if(marker.test(line)&&cleaned.replace(/^(?:todo|task|action|follow[\s-]?up|next step|to do)\s*[:\-]\s*/i,'').trim().length>=3)tasks.push({text:cleaned,noteId:n.id,noteName,done:/^\s*(?:[-*•]\s*)?\[[xX]\]/.test(line)});
    if(decisionLine.test(line))add(decisions,line);
    if(importantLine.test(line))add(priorities,line);
    const dates=line.match(dateTokens)||[];
@@ -108,7 +108,7 @@ export function interpretPeriodNotes(notes,basis='created'){
  if(!list.length){result.overview='No notes match this period yet. Choose another date, or write a new note to start your collection.';return result;}
  const openTasks=uniqueTasks.filter(t=>!t.done).length;
  const pieces=[list.length+' '+(list.length===1?'note':'notes')+' across '+days.size+' writing '+(days.size===1?'day':'days')];
- if(topThemes.length)pieces.push('Frequent topics include '+topThemes.slice(0,3).map(x=>x.name).join(', '));
+ if(topThemes.length)pieces.push('Words appearing in these notes include '+topThemes.slice(0,3).map(x=>x.name).join(', '));
  if(openTasks)pieces.push(openTasks+' marked '+(openTasks===1?'task':'tasks')+' to follow up on');
  if(result.decisions.length)pieces.push(result.decisions.length+' recorded '+(result.decisions.length===1?'decision':'decisions'));
  if(result.dates.length)pieces.push(result.dates.length+' date '+(result.dates.length===1?'reference':'references'));
