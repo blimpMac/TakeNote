@@ -30,13 +30,13 @@ function PixelMark({size=27}) {
   <path d="M9 8H11V18H9Z" fill="#FF9CCD"/>
  </svg>;
 }
-const DEFAULT_AI={provider:'auto',model:'openrouter/free',endpoint:'http://localhost:11434'};
+const DEFAULT_AI={provider:'openrouter',model:'openrouter/free'};
 function loadPrefs() {
  try {const o=JSON.parse(localStorage.getItem(PREF_KEY)||'{}');return [1,2,4].includes(o.grid)?o.grid:2;}
  catch{return 2;}
 }
 function loadAiPrefs(){
- try {const a=JSON.parse(localStorage.getItem('takenote.ai.prefs.v2')||'{}');return {provider:['auto','browser','openrouter','ollama','offline'].includes(a.provider)?a.provider:'auto',model:String(a.model||'openrouter/free'),endpoint:String(a.endpoint||'http://localhost:11434')};}
+ try {const a=JSON.parse(localStorage.getItem('takenote.ai.prefs.v2')||'{}');const provider=['openrouter','groq','offline'].includes(a.provider)?a.provider:'openrouter';const freeModel=typeof a.model==='string'&&(a.model==='openrouter/free'||/^[a-z0-9_.-]+\/[a-z0-9_.:-]+:free$/i.test(a.model));return {provider,model:provider==='groq'?'openai/gpt-oss-20b':freeModel?a.model:'openrouter/free'};}
  catch{return DEFAULT_AI}
 }
 function chipText(n){return n===1?'1 × 1':n===2?'2 × 2':'4 × 4'}
@@ -220,10 +220,6 @@ export default function App() {
        {Array.from({length:Math.max(0,capacity-visibleWriter.length)},(_,i)=><EmptySlot key={'empty-'+i} index={safePage*capacity+visibleWriter.length+i+1} onClick={createNote}/>)}
       </div>
       {writerMaxPage>0&&<div className="page-controls"><button onClick={()=>setPage(p=>Math.max(0,p-1))} disabled={safePage===0}><ChevronLeft size={17}/> Previous</button><span>Page {safePage+1} of {writerMaxPage+1}</span><button onClick={()=>setPage(p=>Math.min(writerMaxPage,p+1))} disabled={safePage===writerMaxPage}>Next <ChevronRight size={17}/></button></div>}
-      <div className="bottom-panels grid grid-cols-1 lg:grid-cols-2 gap-5">
-       <section className="content-panel"><div className="panel-title"><Sparkles size={18}/> Quick note highlights</div><p className="panel-sub">Important details, automatically extracted while you write.</p><ul className="digest-list">{digest([...notes].sort((a,b)=>new Date(b.updated)-new Date(a.updated)).slice(0,12),5).map((x,i)=><li key={i}>{x}</li>)}</ul></section>
-       <section className="content-panel"><div className="panel-title"><Heart size={18}/> Little productivity corner</div><p className="text-sm leading-7 text-[#777b99]">You have <strong>{notes.length}</strong> saved notes, <strong>{notes.filter(n=>n.pinned).length}</strong> pinned favorites, and <strong>{notes.reduce((s,n)=>s+taskLines(n.body).length,0)}</strong> marked tasks.</p><div className="mini-tip">✿ Tip: Press Enter after a bullet, number, or checkbox to continue your list. Press Enter on a blank bullet to stop.</div></section>
-      </div>
      </>}
 
      {(view==='notes'||view==='pinned')&&<>
@@ -255,7 +251,6 @@ export default function App() {
       <GroupTitle kicker="♡ MONTHLY COLLECTION" title="Notes written this month" actions={<><button className="ui-btn ui-btn-soft" onClick={saveNotesBackup}><Download size={16}/> Backup JSON</button><button className="ui-btn ui-btn-soft" onClick={()=>importRef.current?.click()}><Upload size={16}/> Restore</button></>}/>
       {recapNotes.length?<div className="archive-grid">{recapNotes.map(note=><SavedCard key={note.id} note={note} onClick={()=>openSavedNote(note.id)}/>)}</div>:<div className="empty-archive"><CalendarDays size={42}/><h3>Nothing written this month</h3><p>Select another month or create a new note.</p><button className="ui-btn ui-btn-pink" onClick={createNote}>＋ New note</button></div>}
      </>}
-     <footer className="app-footer">made with <span>♥</span> and tiny pixel dreams · your notes are saved in this browser ✧</footer>
     </main>
    </div>
   </div>

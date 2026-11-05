@@ -1,7 +1,7 @@
 
 import React, {useEffect, useState} from 'react';
 import {X, Sparkles, Check, Copy, AlertCircle, ShieldCheck, Settings2, WandSparkles, LoaderCircle, ArrowRight} from 'lucide-react';
-import {runWritingAssistant, browserModelStatus} from '../lib/ai.js';
+import {runWritingAssistant} from '../lib/ai.js';
 const MODES=[
   {id:'proofread',label:'Spelling & grammar',hint:'Correct typos and punctuation while preserving your meaning.'},
   {id:'rewrite',label:'Improve wording',hint:'Make your ideas flow more naturally.'},
@@ -64,38 +64,69 @@ export default function AiPanel({note, config, apiKey, onClose, onApply, onSetti
   </div>
  );
 }
+
 export function AiSettings({config,apiKey,onSave,onClose}) {
- const [provider,setProvider]=useState(config.provider||'auto');
- const [model,setModel]=useState(config.model||'openrouter/free');
- const [endpoint,setEndpoint]=useState(config.endpoint||'http://localhost:11434');
+ const initial=['openrouter','groq','offline'].includes(config.provider)?config.provider:'openrouter';
+ const [provider,setProvider]=useState(initial);
+ const [model,setModel]=useState(initial==='groq'?'openai/gpt-oss-20b':config.model||'openrouter/free');
  const [key,setKey]=useState(apiKey||'');
- const [availability,setAvailability]=useState('checking...');
- useEffect(()=>{browserModelStatus().then(setAvailability)},[]);
- useEffect(()=>{const fn=e=>{if(e.key==='Escape')onClose()};window.addEventListener('keydown',fn);return()=>window.removeEventListener('keydown',fn)},[onClose]);
- const opts=[
-  ['auto','Auto: browser AI → free API → offline'],
-  ['browser','Browser AI (on-device, if supported)'],
-  ['openrouter','OpenRouter free models (your key)'],
-  ['ollama','Ollama local model (your device)'],
-  ['offline','Offline writing helper (no setup)'],
- ];
+ const [remote,setRemote]=useState(null);
+ useEffect(()=>{
+  let mounted=true;
+  fetch('/api/ai').then(r=>r.json()).then(data=>{if(mounted)setRemote(data)}).catch(()=>{if(mounted)setRemote({providers:{}})});
+  return()=>{mounted=false};
+ },[]);
+ useEffect(()=>{
+  const keyHandler=e=>{if(e.key==='Escape')onClose()};
+  window.addEventListener('keydown',keyHandler);
+  return()=>window.removeEventListener('keydown',keyHandler);
+ },[onClose]);
+ const hosted=provider==='openrouter'||provider==='groq';
+ const hasServerKey=Boolean(remote?.providers?.[provider]);
+ const onProviderChange=p=>{
+  setProvider(p);
+  setModel(p==='groq'?'openai/gpt-oss-20b':'openrouter/free');
+  setKey('');
+ };
  return <div className="overlay overlay-ai" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}>
   <section className="pixel-dialog settings-dialog animate-pop" role="dialog" aria-modal="true" aria-labelledby="ai-settings-title">
-   <div className="dialog-header flex justify-between items-center gap-4"><div><p className="pixel-kicker">PIXEL POWERED</p><h2 id="ai-settings-title" className="text-xl font-extrabold">AI settings</h2></div><button className="close-btn" aria-label="Close settings" onClick={onClose}><X size={19}/></button></div>
-   <div className="ai-info mt-4 text-xs"><Sparkles className="shrink-0" size={17}/><p>Browser AI status: <strong>{availability}</strong>. On supported Chrome devices, the built-in model can write privately without a key. Otherwise, connect a free OpenRouter key or local Ollama.</p></div>
-   <label className="field-label mt-4" htmlFor="provider-select">Choose provider</label>
-   <select id="provider-select" className="field-input" value={provider} onChange={e=>setProvider(e.target.value)}>{opts.map(([id,title])=><option key={id} value={id}>{title}</option>)}</select>
-   <label htmlFor="openrouter-key" className="field-label mt-4">OpenRouter API key (optional)</label>
-   <input id="openrouter-key" type="password" className="field-input" value={key} onChange={e=>setKey(e.target.value)} autoComplete="off" placeholder="Paste your free key for hosted AI"/>
-   <p className="text-xs text-[#8b89a4] mt-1">Stored only in this open tab's memory, not in GitHub, localStorage, or a server.</p>
-   <label htmlFor="ai-model" className="field-label mt-4">Model name</label>
-   <input id="ai-model" className="field-input" value={model} onChange={e=>setModel(e.target.value)} placeholder="openrouter/free or gemma3:1b"/>
-   <label htmlFor="ollama-url" className="field-label mt-4">Local Ollama address</label>
-   <input id="ollama-url" className="field-input" value={endpoint} onChange={e=>setEndpoint(e.target.value)} placeholder="http://localhost:11434"/>
-   <div className="help-box mt-4 text-xs leading-6">
-    <strong>Free AI setup:</strong> Get a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" className="underline font-bold">OpenRouter</a>, select OpenRouter and use <code>openrouter/free</code>. Free models have usage limits. Or install <a href="https://ollama.com" target="_blank" rel="noreferrer" className="underline font-bold">Ollama</a> locally, pull <code>gemma3:1b</code>, and allow your website's origin via <code>OLLAMA_ORIGINS</code>. The offline helper works instantly without either.
+   <div className="dialog-header flex justify-between items-center gap-4">
+    <div><p className="pixel-kicker">CLOUD-POWERED WRITING</p><h2 id="ai-settings-title" className="text-xl font-extrabold">AI settings</h2></div>
+    <button className="close-btn" aria-label="Close settings" onClick={onClose}><X size={19}/></button>
    </div>
-   <div className="flex justify-end gap-2 mt-5"><button className="ui-btn ui-btn-soft" onClick={onClose}>Cancel</button><button className="ui-btn ui-btn-primary" onClick={()=>onSave({provider,model:model.trim(),endpoint:endpoint.trim()},key)}><Check size={15}/> Save AI settings</button></div>
+   <div className="ai-info mt-4 text-xs"><Sparkles className="shrink-0" size={18}/><p>All hosted AI runs through the TakeNote website, deployed automatically from GitHub to Vercel. <strong>No local model is required.</strong> Your note is sent to the provider only after you request a suggestion.</p></div>
+   <label className="field-label mt-4" htmlFor="provider-select">AI service</label>
+   <select id="provider-select" className="field-input" value={provider} onChange={e=>onProviderChange(e.target.value)}>
+    <option value="openrouter">OpenRouter · free model router</option>
+    <option value="groq">Groq Cloud · free-tier model</option>
+    <option value="offline">Basic offline spelling helper (not generative AI)</option>
+   </select>
+   {hosted&&<>
+    <div className="help-box mt-3 text-xs leading-6">
+     {remote===null?'Checking hosted AI configuration…':hasServerKey?'✓ A shared API key is configured on Vercel. You can use hosted AI without supplying your own key.':'A shared API key is not configured for this provider yet. Enter a personal API key below, or set one in Vercel environment variables.'}
+    </div>
+    <label htmlFor="hosted-ai-key" className="field-label mt-4">{provider==='groq'?'Groq Cloud API key':'OpenRouter API key'} {hasServerKey?'(optional)':'(required unless server key is configured)'}</label>
+    <input id="hosted-ai-key" type="password" className="field-input" value={key} onChange={e=>setKey(e.target.value)} autoComplete="off" placeholder={provider==='groq'?'gsk_...':'sk-or-v1-...'}/>
+    <p className="text-xs text-[#8b89a4] mt-1">Your personal key is kept only in this open browser tab's memory and forwarded through the Vercel API for each request. It is not saved in localStorage or GitHub.</p>
+    {provider==='openrouter'&&<>
+     <label htmlFor="ai-model" className="field-label mt-4">Free model selection</label>
+     <input id="ai-model" className="field-input" value={model} onChange={e=>setModel(e.target.value)} placeholder="openrouter/free"/>
+     <p className="text-xs text-[#8b89a4] mt-1">Use <code>openrouter/free</code> or an explicit <code>:free</code> model. Paid models are blocked by the API.</p>
+    </>}
+    {provider==='groq'&&<p className="text-xs text-[#8b89a4] mt-3">Model: <code>openai/gpt-oss-20b</code> (cloud inference, subject to Groq's free-tier limits).</p>}
+    <div className="help-box mt-4 text-xs leading-6">
+     Get a free API key at {provider==='groq'
+      ?<a href="https://console.groq.com/keys" target="_blank" rel="noreferrer" className="underline font-bold">Groq Cloud</a>
+      :<a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" className="underline font-bold">OpenRouter</a>}.
+     You can alternatively set {provider==='groq'?<code>GROQ_API_KEY</code>:<code>OPENROUTER_API_KEY</code>} in Vercel project settings and redeploy.
+     This website is public: protect shared keys with rate limits and quota monitoring.
+    </div>
+   </>}
+   {!hosted&&<div className="help-box mt-4 text-xs leading-6">Basic offline suggestions work instantly without a key, but they do not use a language model. Select OpenRouter or Groq for AI rewriting, grammar checks and summaries.</div>}
+   <div className="flex justify-end gap-2 mt-5">
+    <button className="ui-btn ui-btn-soft" onClick={onClose}>Cancel</button>
+    <button className="ui-btn ui-btn-primary" onClick={()=>onSave({provider,model:provider==='groq'?'openai/gpt-oss-20b':model.trim()||'openrouter/free'},key)}><Check size={15}/> Save AI settings</button>
+   </div>
   </section>
- </div>
+ </div>;
 }

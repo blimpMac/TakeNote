@@ -8,21 +8,36 @@ A cozy, pixel-inspired notebook with a **pink 8-bit T logo**, built with **React
 - Writing desk grid controls: **1×1** (one note), **2×2** (four different note slots), **4×4** (sixteen slots). Empty slots create new notes.
 - Bullet, numbered and checkbox lists automatically continue with Enter; Enter on a blank list item exits list mode.
 - Browser spellcheck plus AI suggestions: spelling/grammar, wording improvements, restructuring and highlights. Review the original and proposed text before applying changes.
-- Daily rotating inspirational quotes, monthly recap dashboard, task highlights, pinned notes, JSON backup/restore, and Markdown export.
+- Daily rotating inspirational quotes, monthly recap dashboard, pinned notes, JSON backup/restore, and Markdown export.
+- The writing desk excludes the previous quick-highlights/productivity cards and footer for a cleaner focus.
 - Subtle hover/float/window animations, with reduced-motion accessibility support.
 
 ## Compatibility and local storage
 The app uses the same browser storage key as the original site: `takenote.pixel.v1`. It normalizes existing notes without changing their content. Notes are local to each browser/device; there is **no cloud sync or login**. Backup periodically from **My notes → Backup** or **Monthly recap → Backup JSON**. Browser storage can be deleted when clearing site data.
 
-## AI setup — working options, without a site account
-By default, **Auto** tries Chrome's built-in Prompt API on compatible hardware/browsers, then a configured OpenRouter key, then offers offline corrections. There is no guaranteed free public model without either local capability or a user-provided free-model key.
+## Hosted AI setup — no local model required
 
-1. **Browser AI**: On compatible Chrome desktop devices, open **AI settings** and choose **Auto** or **Browser AI**. Availability can vary with version, hardware and model download. Note text is processed on-device.
-2. **OpenRouter free models**: Create your own API key at https://openrouter.ai/keys. In **AI settings**, select **OpenRouter free models**, paste the key, and choose `openrouter/free` (or a specific model ending in `:free`). Free usage is subject to rate limits and provider availability. TakeNote sends each requested edit to its same-origin **Vercel serverless endpoint** (`/api/ai`), which forwards to OpenRouter. The key is sent only for that request and is not saved on the server. The key is held **only in the page's memory** (not committed, stored in the browser, or written to the server) and must be entered after a refresh. The chosen provider receives note text only after you click **Generate suggestions**.
-3. **Ollama local**: Install https://ollama.com and run `ollama pull gemma3:1b`. Select **Ollama** and use model `gemma3:1b`, endpoint `http://localhost:11434`. Browser CORS may require setting `OLLAMA_ORIGINS` to the exact TakeNote website origin before restarting Ollama. HTTPS-to-localhost access can depend on browser policies.
-4. **Offline helper**: Works automatically with no key, using common spelling/spacing corrections and extractive highlights. It is not an LLM. Browser spelling underlines offer additional right-click suggestions.
+The TakeNote source is stored in **GitHub** and deployed automatically to **Vercel**. GitHub repositories and GitHub Pages do not run a live LLM inference API. Vercel provides the serverless `/api/ai` endpoint, which forwards requests to a cloud AI provider.
 
-All AI changes are **preview-only** until you select **Apply revision**. The option to summarize monthly notes can create a new recap note after approval.
+The following choices are integrated in **AI settings**:
+
+1. **OpenRouter free-model router** (default): create a key at https://openrouter.ai/keys and use the model `openrouter/free`. This routes to a currently available free model; availability and free-tier rate limits apply. Paid model IDs are blocked.
+2. **Groq Cloud free tier**: create a key at https://console.groq.com/keys. The app uses `openai/gpt-oss-20b` for hosted inference, subject to Groq account limits.
+3. **Offline helper**: rule-based spelling/wording corrections without an AI model. It is a fallback, not generative AI.
+
+No Ollama installation or local inference is required.
+
+### Two ways to connect a hosted AI API key
+
+**Personal key (easy):** Choose a provider in TakeNote → AI settings, paste your API key, and save. The key stays in page memory for this tab and is forwarded only on an explicit AI request. It is not included in repository files or localStorage. Each user supplies their own key.
+
+**Shared deployment key (one-time setup):** In Vercel → TakeNote project → Settings → Environment Variables, add either `OPENROUTER_API_KEY` or `GROQ_API_KEY` with a valid provider key, then redeploy. The website detects the configured provider via `GET /api/ai`, and visitors do not need to enter keys. **Important:** this makes a shared API quota available to the public. The serverless endpoint has a basic best-effort in-memory per-IP limiter (5/minute, 30/day), which is not reliable across instances; for an open public app use a durable rate limiter, provider-side key spending limits, and usage monitoring before relying on shared credentials.
+
+Vercel has **no configured API keys at the time of this update**, so hosted AI needs one of the options above before it can successfully generate. Never put secrets in GitHub source, `.env.example`, or client-side `VITE_*` variables.
+
+AI changes are always suggestions: compare the original and proposed text, then click **Apply revision**. Basic spellcheck and browser right-click spelling suggestions work independently.
+
+GitHub Models is not an option; GitHub retired its inference API on July 30, 2026. See https://docs.github.com/en/github-models.
 
 ## Development
 
@@ -39,7 +54,8 @@ Open the local URL shown by Vite. The site deploys to Vercel as a Vite project w
 - `src/components/NotePad.jsx` — shared pixel editor, lists and autosave
 - `src/components/AiPanel.jsx` — AI compare/approve and settings
 - `src/lib/notes.js` — storage, lists, exports, quotes and summaries
-- `src/lib/ai.js` — browser Prompt API, OpenRouter, Ollama and offline fallback
+- `src/lib/ai.js` — hosted OpenRouter/Groq inference and offline fallback
+- `api/ai.js` — Vercel serverless AI proxy with provider validation
 - `src/styles.css` — Tailwind import, custom palette and animations
 
 The original kitty pixel mascot is independent artwork and not an official licensed character.
