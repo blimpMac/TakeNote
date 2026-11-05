@@ -29,22 +29,83 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 /* Keep navigation and cloud actions readable on narrow screens. */
 @media(max-width:900px){.topbar{flex-wrap:wrap;padding:10px 0;min-height:68px}.right-tools{flex-wrap:wrap;justify-content:flex-end}.right-tools .btn{padding:8px 10px;min-height:36px;font-size:11px}}
 @media(max-width:480px){.topbar{align-items:flex-start}.crumb{font-size:11px}.right-tools{width:100%;justify-content:flex-start;gap:7px}.right-tools .btn{flex:1;min-width:0;white-space:normal;text-align:center}.right-tools .avatar{display:none}.toolbar .filter{max-width:100%;min-width:0;flex:1}.hero{min-height:130px}}
+
+.hero{margin-top:30px;background:linear-gradient(116deg,#dceaff,#fce4f1 68%,#fbe0ef);border:2px solid #a9b6df;box-shadow:6px 6px 0 #c0c1dc;border-radius:13px;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px;min-height:185px;padding:28px 37px;position:relative;overflow:hidden}
+.hero:after{content:'✦ ✧ ✦';font-size:31px;letter-spacing:13px;color:#ffffffad;position:absolute;right:43px;top:13px;pointer-events:none}
+.eyebrow{font-family:var(--pixel);font-size:9px;color:#9480a9;letter-spacing:1px;line-height:1.9}
+.hero h1{font-family:var(--pixel);font-size:clamp(16px,2.5vw,25px);line-height:1.8;letter-spacing:-1px;margin:10px 0;color:var(--ink);font-weight:400}
+.hero h1 em{color:#eb84b5;font-style:normal}.spark{color:#e9a0cd}
+.hero p{color:#707496;font-weight:600;margin:0;font-size:14px;line-height:1.6}
+.hero-art{display:block;font-size:76px;z-index:1;filter:drop-shadow(6px 5px 0 #d2b4d8);transform:rotate(-9deg);white-space:nowrap}
+.topbar-left{display:flex;gap:12px;align-items:center;min-width:0}
+.menu-toggle{border:2px solid #a4a9d2;border-radius:8px;background:#edf0ff;color:#555c8b;box-shadow:2px 2px 0 #d2cfe7;display:grid;place-items:center;width:41px;height:40px;flex:0 0 41px;font-size:20px}
+.menu-toggle:hover{background:#dbe5ff}
+.nav .nav-new{background:#c4dcff;border:2px solid #8e9ecb;color:#46527e;box-shadow:3px 3px 0 #afb9dc}
+.nav .nav-new:hover{background:#b4d2ff}
+.nav-backdrop[hidden]{display:none}
+.app.sidebar-hidden .sidebar{display:none}
+.sidebar{z-index:40}
+.board[data-grid="1"]{max-width:none;grid-template-columns:minmax(0,1fr)}
+.board[data-grid="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.board[data-grid="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+.board .note{width:100%;min-width:0;min-height:310px}
+.board[data-grid="1"] .note{min-height:540px}
+.board[data-grid="1"] .note-body{min-height:350px;font-size:15px}
+.board[data-grid="2"] .note{min-height:360px}
+.board[data-grid="4"] .note{min-height:260px}
+.board[data-grid="4"] .note-body{min-height:105px}
+.empty-slot{display:flex;align-items:stretch;flex-direction:column;gap:10px;padding:17px;text-align:left;color:#7f86a5;border-style:dashed;background:#fbfaff}
+.empty-slot .slot-heading{display:block;font-family:var(--pixel);font-size:10px;line-height:1.7;color:#8b90b3}
+.empty-slot .slot-body{display:block;flex:1;min-height:70px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 28px,#dddfea 29px,#dddfea 30px);opacity:.6}
+.empty-slot .slot-hint{font-size:12px;font-weight:800;color:#9490ae}
+.empty-slot:hover{background:#f0f4ff;border-color:#9dafd4}
+.editor-tools{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:1px 13px 10px}
+.editor-tools button{border:1px solid #bfc3d8;border-radius:6px;padding:5px 8px;background:#ffffffb8;color:#666d93;font-size:10px;font-weight:800;line-height:1.35;white-space:nowrap}
+.editor-tools button:hover{background:#dce9ff;color:#434f83}
+.editor-tools button[data-action="writing"]{background:#f3e7ff;border-color:#c7b8e4;color:#73588e}
+.board[data-grid="4"] .editor-tools{gap:4px;margin:0 8px 9px}
+.board[data-grid="4"] .editor-tools button{font-size:9px;padding:4px 5px}
+.note textarea,.note input{min-width:0}
+.writing-proposal{min-height:185px;resize:vertical;line-height:1.65}
+.ai-help{font-size:12px;padding:10px 12px;border:1px dashed #c7c2da;border-radius:7px;color:#666b8e;background:#f7f8ff}
+@media(max-width:1050px){.board[data-grid="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:730px){
+.app .sidebar{display:flex;position:fixed;top:0;left:0;height:100dvh;width:min(300px,85vw);padding:25px 18px;gap:22px;overflow:auto;transform:translateX(-106%);transition:transform .2s ease;border-right:2px solid #cec5e5;border-bottom:0}
+.app.menu-open .sidebar{transform:translateX(0);box-shadow:12px 0 38px #38395e2f}
+.app.sidebar-hidden .sidebar{display:flex}
+.app .sidebar .side-label{display:block}
+.app .sidebar .nav{display:flex;flex-direction:column;overflow:visible}
+.app .sidebar .nav button{padding:13px;font-size:13px;white-space:normal}
+.app .nav-backdrop:not([hidden]){display:block;position:fixed;inset:0;background:#302a4d66;z-index:35}
+.hero{padding:22px 19px;min-height:150px}
+.hero h1{font-size:clamp(15px,3.5vw,21px);line-height:1.75}
+.hero p{font-size:12px}.hero-art{font-size:46px}
+.board[data-grid="2"],.board[data-grid="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.board[data-grid="1"] .note{min-height:420px}.board[data-grid="1"] .note-body{min-height:230px}
+}
+@media(max-width:520px){
+.hero{min-height:140px}.hero-art{display:none}
+.topbar-left{width:100%}.right-tools{width:100%;justify-content:flex-start}
+.board[data-grid="2"],.board[data-grid="4"]{grid-template-columns:1fr}
+.board[data-grid="1"] .note-body{min-height:220px}
+}
 </style>
 </head>
 <body>
-<div class="app">
-<aside class="sidebar">
+<div class="app" id="app-shell">
+<aside class="sidebar" id="app-sidebar" aria-label="Notebook menu">
  <div class="logo"><div class="logo-badge">✿</div><div class="brand">TakeNote<small>PIXEL EDITION ♡</small></div></div>
- <div><p class="side-label">✦ YOUR SPACE</p><nav class="nav" aria-label="Main navigation">
+ <div><p class="side-label">✦ YOUR SPACE</p><nav class="nav" aria-label="Main navigation"><button type="button" id="nav-new-btn" class="nav-new"><span class="nav-icon">＋</span> New note</button>
  <button type="button" class="active" data-view="notes"><span class="nav-icon">▦</span> My notebook</button>
  <button type="button" data-view="dashboard"><span class="nav-icon">▥</span> Monthly recap</button>
  <button type="button" data-view="favorites"><span class="nav-icon">♡</span> Pinned notes</button>
  </nav></div>
  <div class="side-bottom"><div class="mini-card"><svg class="mini-cat" viewBox="0 0 64 60" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" role="img" aria-label="Original pixel kitty mascot"><path d="M8 20V5h9v7h30V5h9v15h5v24h-6v8H9v-8H3V20z" fill="#fff" stroke="#77728e" stroke-width="3"/><path d="M40 13V5h16v16H40z" fill="#f6b2d6"/><path d="M46 9h5v10h-5zM42 12h13v5H42z" fill="#ec82bd"/><path d="M17 29h5v6h-5zm27 0h5v6h-5z" fill="#66617c"/><path d="M29 35h7v4h-7z" fill="#eaa0be"/><path d="M6 34h7v2H6zm0 5h7v2H6zm45-5h7v2h-7zm0 5h7v2h-7z" fill="#8a879e"/></svg><strong>YOU GOT THIS!</strong><p>Every little thought matters ♡</p></div></div>
 </aside>
+<div class="nav-backdrop" id="nav-backdrop" hidden></div>
 <main class="main"><div class="content">
- <header class="topbar"><div class="crumb">my little corner <span>/</span> <span id="crumb-view">notebook</span></div><div class="right-tools"><span class="status">● autosaved locally</span><button class="btn quiet" type="button" id="cloud-btn">☁ Sign in</button><button class="btn quiet" type="button" id="settings-btn">⚙ AI settings</button><div class="avatar" aria-label="Pixel companion">🐱</div></div></header>
- <section class="hero" aria-labelledby="quote-text"><div class="quote-heading"><span class="quote-eyebrow">QUOTE OF THE DAY</span><time class="quote-date" id="quote-date"></time></div><h1 id="quote-text">A little progress every day becomes something wonderful.</h1></section>
+ <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" id="menu-toggle" aria-label="Toggle notebook menu" aria-controls="app-sidebar" aria-expanded="true">☰</button><div class="crumb">my little corner <span>/</span> <span id="crumb-view">notebook</span></div></div><div class="right-tools"><span class="status">● autosaved locally</span><button class="btn quiet" type="button" id="settings-btn">⚙ AI settings</button><div class="avatar" aria-label="Pixel companion">🐱</div></div></header>
+ <section class="hero"><div><div class="eyebrow">✧ WELCOME TO YOUR HAPPY PLACE ✧</div><h1>little notes, <em>big ideas!</em> <span class="spark">✦</span></h1><p>Catch your thoughts, collect the magic, make every idea count. ♡</p></div><div class="hero-art" aria-hidden="true">☁️💌</div></section>
  <section id="notes-view">
  <div class="section-bar"><div><h2>✿ My little notebook</h2><p id="notes-subtitle">Your thoughts live here ♡</p></div><div class="actions"><div class="seg" role="group" aria-label="Notebook layout"><button type="button" data-grid="1">1×1</button><button type="button" class="active" data-grid="2">2×2</button><button type="button" data-grid="4">4×4</button></div><button class="btn primary" id="new-btn" type="button">＋ New note</button></div></div>
  <div class="toolbar"><label class="search">⌕ <input id="search" type="search" placeholder="Search your notes..." aria-label="Search notes"></label><select class="filter" id="sort" aria-label="Sort notes"><option value="updated">✦ Recently edited</option><option value="created">Date created</option><option value="title">Title A–Z</option></select><select class="filter" id="color-filter" aria-label="Filter by color"><option value="all">All colors</option><option value="pink">Pink</option><option value="blue">Blue</option><option value="yellow">Yellow</option><option value="mint">Mint</option><option value="lavender">Lavender</option></select></div>
@@ -60,7 +121,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
  <footer class="footer">made with <span>♥</span> and little pixel dreams · your notes stay in your browser ✧</footer>
 </div></main></div>
 <div id="modal-root"></div><div class="toast-zone" id="toasts" role="status" aria-live="polite"></div>
-<script src="./cloud-sync.js"></script>
 <script>
 (()=>{'use strict';
 const STORE='takenote.pixel.v1', PREF='takenote.preferences.v1';
@@ -69,51 +129,10 @@ const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const formatDate=s=>new Date(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
 const monthKey=s=>{const d=new Date(s);return Number.isNaN(d.getTime())?'':d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
 const uid=()=>globalThis.crypto?.randomUUID?.()||'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.floor(Math.random()*16);return(c==='x'?r:(r&3|8)).toString(16)});
-const dailyQuotes=[
-  "A little progress every day becomes something wonderful.",
-  "Ideas grow when you give them a place to land.",
-  "Begin with one thought. The rest can follow.",
-  "Your next great idea might start as a tiny note.",
-  "Make room for curiosity, even on the busiest days.",
-  "You do not need a perfect plan to make a fresh start.",
-  "Small steps have a way of becoming big stories.",
-  "Write it down today. Thank yourself tomorrow.",
-  "A calm mind makes space for brighter ideas.",
-  "Every page is another chance to begin again.",
-  "Your pace is enough. Keep your ideas moving.",
-  "Collect little moments. They add up beautifully.",
-  "A simple idea deserves a chance to shine.",
-  "Progress can be quiet and still matter.",
-  "The best place to start is right where you are.",
-  "Let your thoughts be messy before they become clear.",
-  "One kind reminder can change an entire day.",
-  "Build your dreams one thoughtful line at a time.",
-  "The little things you notice are worth remembering.",
-  "A new day is a blank page, not a deadline.",
-  "Give yourself credit for showing up today.",
-  "Take the next step, even if it is a small one.",
-  "Good ideas often begin with an ordinary moment.",
-  "You can slow down without giving up.",
-  "Make something simple, then make it yours.",
-  "Your notes are proof that you keep learning.",
-  "There is room for both ambition and rest.",
-  "Let today be about trying, not perfection.",
-  "A fresh perspective begins with a single question.",
-  "Find a little wonder in what you are working on.",
-  "What you write today can help you grow tomorrow."
-];
-function renderDailyQuote(){
- const date=new Date();
- const dayNumber=Math.floor(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())/86400000);
- const quote=dailyQuotes[((dayNumber%dailyQuotes.length)+dailyQuotes.length)%dailyQuotes.length];
- const dateEl=$('quote-date'),quoteEl=$('quote-text');
- if(dateEl){dateEl.dateTime=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');dateEl.textContent=date.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}
- if(quoteEl)quoteEl.textContent=quote;
-}
 const today=new Date();let notes=[],prefs={grid:2},view='notes',page=0,search='',sort='updated',colorFilter='all',selectedMonth=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0'),apiKey='';
 const colors=['pink','blue','yellow','mint','lavender'], nextColor=()=>colors[notes.length%colors.length];
 function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;$('toasts').append(el);setTimeout(()=>el.remove(),3500)}
-function persist(){try{localStorage.setItem(STORE,JSON.stringify(notes));window.TakeNoteCloud?.schedule();return true}catch(e){toast('Storage is full or unavailable. Export a backup!');return false}}
+function persist(){try{localStorage.setItem(STORE,JSON.stringify(notes));return true}catch(e){toast('Storage is full or unavailable. Export a backup!');return false}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs))}catch(e){}}
 function load(){try{const raw=JSON.parse(localStorage.getItem(STORE)||'[]');if(Array.isArray(raw))notes=raw.filter(n=>n&&typeof n.id==='string').map(n=>({id:n.id,title:String(n.title||''),body:String(n.body||''),color:colors.includes(n.color)?n.color:'pink',pinned:!!n.pinned,created:n.created||new Date().toISOString(),updated:n.updated||n.created||new Date().toISOString()})).slice(0,3000);const p=JSON.parse(localStorage.getItem(PREF)||'{}');if([1,2,4].includes(p.grid))prefs.grid=p.grid;if(['ollama','openrouter','offline'].includes(p.provider))prefs.provider=p.provider;if(typeof p.model==='string')prefs.model=p.model.slice(0,120);if(typeof p.endpoint==='string')prefs.endpoint=p.endpoint.slice(0,300)}catch(e){toast('Saved data could not be read. You can restore a JSON backup.')}}
 function createNote(title='',body=''){const date=new Date().toISOString(),n={id:uid(),title,body,color:nextColor(),pinned:false,created:date,updated:date};notes.unshift(n);persist();return n}
@@ -153,7 +172,7 @@ $('month-picker').onchange=e=>{if(/^\d{4}-\d{2}$/.test(e.target.value)){selected
 $('backup-btn').onclick=()=>download('takenote-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'TakeNote',version:1,exported:new Date().toISOString(),notes},null,2),'application/json');
 $('import-btn').onclick=()=>$('import-file').click();$('import-file').onchange=async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>5*1024*1024)throw Error('Backup must be under 5 MB');const json=JSON.parse(await file.text()),data=Array.isArray(json)?json:json.notes;if(!Array.isArray(data)||data.length>3000)throw Error('Invalid note backup');const restored=data.filter(n=>n&&typeof n.id==='string'&&typeof n.body==='string').map(n=>({id:n.id,title:String(n.title||'').slice(0,160),body:n.body.slice(0,100000),created:n.created&& !Number.isNaN(Date.parse(n.created))?n.created:new Date().toISOString(),updated:n.updated&&!Number.isNaN(Date.parse(n.updated))?n.updated:new Date().toISOString(),pinned:!!n.pinned,color:colors.includes(n.color)?n.color:'pink'}));if(!confirm('Restore '+restored.length+' notes? This replaces all notes currently saved in this browser. Export a backup first if needed.'))return;notes=restored;persist();renderMonth();refreshDigest();toast('Your notes are restored ♡')}catch(err){toast('Could not restore: '+err.message)}};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();showView('notes');$('search').focus()}});
-renderDailyQuote();setInterval(renderDailyQuote,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderDailyQuote()});load();$('month-picker').value=selectedMonth;renderBoard();refreshDigest();window.TakeNoteCloud?.init({get:()=>notes,set:v=>{notes=v;renderBoard();refreshDigest();if(view==='dashboard')renderMonth()},persist,toast,modal:showModal,close:closeModal,escape:escapeHTML});
+load();$('month-picker').value=selectedMonth;renderBoard();refreshDigest();
 })();
 </script>
 </body></html>
