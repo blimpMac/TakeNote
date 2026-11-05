@@ -39,7 +39,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
  <div class="side-bottom"><div class="mini-card"><svg class="mini-cat" viewBox="0 0 64 60" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" role="img" aria-label="Original pixel kitty mascot"><path d="M8 20V5h9v7h30V5h9v15h5v24h-6v8H9v-8H3V20z" fill="#fff" stroke="#77728e" stroke-width="3"/><path d="M40 13V5h16v16H40z" fill="#f6b2d6"/><path d="M46 9h5v10h-5zM42 12h13v5H42z" fill="#ec82bd"/><path d="M17 29h5v6h-5zm27 0h5v6h-5z" fill="#66617c"/><path d="M29 35h7v4h-7z" fill="#eaa0be"/><path d="M6 34h7v2H6zm0 5h7v2H6zm45-5h7v2h-7zm0 5h7v2h-7z" fill="#8a879e"/></svg><strong>YOU GOT THIS!</strong><p>Every little thought matters ♡</p></div></div>
 </aside>
 <main class="main"><div class="content">
- <header class="topbar"><div class="crumb">my little corner <span>/</span> <span id="crumb-view">notebook</span></div><div class="right-tools"><span class="status">● autosaved locally</span><button class="btn quiet" type="button" id="settings-btn">⚙ AI settings</button><div class="avatar" aria-label="Pixel companion">🐱</div></div></header>
+ <header class="topbar"><div class="crumb">my little corner <span>/</span> <span id="crumb-view">notebook</span></div><div class="right-tools"><span class="status">● autosaved locally</span><button class="btn quiet" type="button" id="cloud-btn">☁ Sign in</button><button class="btn quiet" type="button" id="settings-btn">⚙ AI settings</button><div class="avatar" aria-label="Pixel companion">🐱</div></div></header>
  <section class="hero"><div><div class="eyebrow">✧ WELCOME TO YOUR HAPPY PLACE ✧</div><h1>little notes, <em>big ideas!</em> <span class="spark">✦</span></h1><p>Catch your thoughts, collect the magic, make every idea count. ♡</p></div><div class="hero-art" aria-hidden="true">☁️💌</div></section>
  <section id="notes-view">
  <div class="section-bar"><div><h2>✿ My little notebook</h2><p id="notes-subtitle">Your thoughts live here ♡</p></div><div class="actions"><div class="seg" role="group" aria-label="Notebook layout"><button type="button" data-grid="1">1×1</button><button type="button" class="active" data-grid="2">2×2</button><button type="button" data-grid="4">4×4</button></div><button class="btn primary" id="new-btn" type="button">＋ New note</button></div></div>
@@ -56,6 +56,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
  <footer class="footer">made with <span>♥</span> and little pixel dreams · your notes stay in your browser ✧</footer>
 </div></main></div>
 <div id="modal-root"></div><div class="toast-zone" id="toasts" role="status" aria-live="polite"></div>
+<script src="./cloud-sync.js"></script>
 <script>
 (()=>{'use strict';
 const STORE='takenote.pixel.v1', PREF='takenote.preferences.v1';
@@ -63,11 +64,11 @@ const $=id=>document.getElementById(id);
 const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const formatDate=s=>new Date(s).toLocaleDateString(undefined,{month:'short',day:'numeric'});
 const monthKey=s=>{const d=new Date(s);return Number.isNaN(d.getTime())?'':d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
-const uid=()=>globalThis.crypto?.randomUUID?.()||'note-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+const uid=()=>globalThis.crypto?.randomUUID?.()||'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.floor(Math.random()*16);return(c==='x'?r:(r&3|8)).toString(16)});
 const today=new Date();let notes=[],prefs={grid:2},view='notes',page=0,search='',sort='updated',colorFilter='all',selectedMonth=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0'),apiKey='';
 const colors=['pink','blue','yellow','mint','lavender'], nextColor=()=>colors[notes.length%colors.length];
 function toast(msg){const el=document.createElement('div');el.className='toast';el.textContent=msg;$('toasts').append(el);setTimeout(()=>el.remove(),3500)}
-function persist(){try{localStorage.setItem(STORE,JSON.stringify(notes));return true}catch(e){toast('Storage is full or unavailable. Export a backup!');return false}}
+function persist(){try{localStorage.setItem(STORE,JSON.stringify(notes));window.TakeNoteCloud?.schedule();return true}catch(e){toast('Storage is full or unavailable. Export a backup!');return false}}
 function savePrefs(){try{localStorage.setItem(PREF,JSON.stringify(prefs))}catch(e){}}
 function load(){try{const raw=JSON.parse(localStorage.getItem(STORE)||'[]');if(Array.isArray(raw))notes=raw.filter(n=>n&&typeof n.id==='string').map(n=>({id:n.id,title:String(n.title||''),body:String(n.body||''),color:colors.includes(n.color)?n.color:'pink',pinned:!!n.pinned,created:n.created||new Date().toISOString(),updated:n.updated||n.created||new Date().toISOString()})).slice(0,3000);const p=JSON.parse(localStorage.getItem(PREF)||'{}');if([1,2,4].includes(p.grid))prefs.grid=p.grid;if(['ollama','openrouter','offline'].includes(p.provider))prefs.provider=p.provider;if(typeof p.model==='string')prefs.model=p.model.slice(0,120);if(typeof p.endpoint==='string')prefs.endpoint=p.endpoint.slice(0,300)}catch(e){toast('Saved data could not be read. You can restore a JSON backup.')}}
 function createNote(title='',body=''){const date=new Date().toISOString(),n={id:uid(),title,body,color:nextColor(),pinned:false,created:date,updated:date};notes.unshift(n);persist();return n}
@@ -107,7 +108,7 @@ $('month-picker').onchange=e=>{if(/^\d{4}-\d{2}$/.test(e.target.value)){selected
 $('backup-btn').onclick=()=>download('takenote-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'TakeNote',version:1,exported:new Date().toISOString(),notes},null,2),'application/json');
 $('import-btn').onclick=()=>$('import-file').click();$('import-file').onchange=async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;try{if(file.size>5*1024*1024)throw Error('Backup must be under 5 MB');const json=JSON.parse(await file.text()),data=Array.isArray(json)?json:json.notes;if(!Array.isArray(data)||data.length>3000)throw Error('Invalid note backup');const restored=data.filter(n=>n&&typeof n.id==='string'&&typeof n.body==='string').map(n=>({id:n.id,title:String(n.title||'').slice(0,160),body:n.body.slice(0,100000),created:n.created&& !Number.isNaN(Date.parse(n.created))?n.created:new Date().toISOString(),updated:n.updated&&!Number.isNaN(Date.parse(n.updated))?n.updated:new Date().toISOString(),pinned:!!n.pinned,color:colors.includes(n.color)?n.color:'pink'}));if(!confirm('Restore '+restored.length+' notes? This replaces all notes currently saved in this browser. Export a backup first if needed.'))return;notes=restored;persist();renderMonth();refreshDigest();toast('Your notes are restored ♡')}catch(err){toast('Could not restore: '+err.message)}};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();showView('notes');$('search').focus()}});
-load();$('month-picker').value=selectedMonth;renderBoard();refreshDigest();
+load();$('month-picker').value=selectedMonth;renderBoard();refreshDigest();window.TakeNoteCloud?.init({get:()=>notes,set:v=>{notes=v;renderBoard();refreshDigest();if(view==='dashboard')renderMonth()},persist,toast,modal:showModal,close:closeModal,escape:escapeHTML});
 })();
 </script>
 </body></html>
