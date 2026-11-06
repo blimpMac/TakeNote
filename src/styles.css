@@ -6,7 +6,15 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .pixel-kicker{font-size:9px;line-height:1.9;color:#a393c2;letter-spacing:0}
 .app-shell{background:radial-gradient(#eee6f5 1px,transparent 1px) 0 0/19px 19px;min-height:100vh;align-items:stretch}
 .sidebar{background:#f4edfd;width:247px;min-width:247px;padding:25px 18px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;z-index:40;border-right:2px solid #e4dcf1;transition:transform .24s ease,opacity .24s ease}
-.desktop-sidebar-hidden .sidebar{display:none}
+.desktop-sidebar-hidden .sidebar{display:flex;width:64px;min-width:64px;padding:18px 9px}
+
+/* Hamburger belongs to the sidebar, including its collapsed icon rail. */
+.sidebar-header{display:flex;align-items:center;gap:9px;min-height:44px;width:100%}
+.sidebar-header .hamburger{width:39px;height:40px;min-width:39px;padding:8px;display:grid;place-items:center;flex-shrink:0}
+.sidebar-header .logo{min-width:0;flex:1;padding:0}
+.sidebar-header .logo-icon{height:39px;width:39px;min-width:39px}
+.sidebar-header .brand-text{font-size:13px;letter-spacing:-.5px;white-space:nowrap}
+.desktop-sidebar-hidden .sidebar-header{justify-content:center}
 .logo{padding:5px 3px}.logo-icon{background:#fff0fa;border:2px solid #df8bb6;box-shadow:3px 3px 0 #e9b3d2;border-radius:50%;width:45px;height:45px;display:grid;place-items:center;transition:transform .18s ease,box-shadow .18s ease}
 .logo-icon:hover{transform:translateY(-2px);box-shadow:3px 5px 0 #e9b3d2}
 .pixel-t-mark{display:block;image-rendering:pixelated;flex-shrink:0}
@@ -138,11 +146,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 @media(max-width:850px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-banner{padding:24px}.hero-title{font-size:clamp(15px,2.6vw,20px)}}
 @media(max-width:760px){
 .mobile-brand{display:inline-flex}
-.sidebar{position:fixed;left:0;top:0;bottom:0;height:100dvh;width:min(300px,88vw);transform:translateX(-110%);box-shadow:0 0 transparent}
-.sidebar.sidebar-open{transform:translateX(0);box-shadow:12px 0 38px #38395e2f}
-.desktop-sidebar-hidden .sidebar{display:flex}
+.sidebar{position:fixed;left:0;top:0;bottom:0;height:100dvh;width:60px;min-width:60px;padding:13px 9px;transform:none;box-shadow:2px 0 0 #e4dcf1}
+.sidebar.sidebar-open{width:min(300px,88vw);min-width:0;padding:21px 16px;transform:none;box-shadow:12px 0 38px #38395e2f}
+.desktop-sidebar-hidden .sidebar{display:flex;width:60px;min-width:60px;padding:13px 9px}
+.desktop-sidebar-hidden .sidebar.sidebar-open{width:min(300px,88vw);min-width:0;padding:21px 16px}
+.sidebar-header{justify-content:center}
+.sidebar.sidebar-open .sidebar-header{justify-content:flex-start}
 .sidebar-shade{position:fixed;inset:0;z-index:35;background:#2926406d}
-.main-surface{padding:0 15px 35px}.topbar{min-height:68px}
+.main-surface{margin-left:60px;padding:0 15px 35px}.topbar{min-height:68px}
 .hero-banner{margin-top:18px;min-height:180px;padding:22px 19px}.hero-sticker{font-size:41px;gap:0}.quote-line{margin-top:13px}
 .archive-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.writing-grid.grid-layout-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

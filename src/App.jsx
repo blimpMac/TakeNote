@@ -90,12 +90,22 @@ export default function App() {
  const [apiKey,setApiKey]=useState('');
  const [sidebarOpen,setSidebarOpen]=useState(false);
  const [sidebarCollapsed,setSidebarCollapsed]=useState(false);
+ const [mobileNav,setMobileNav]=useState(()=>typeof window!=='undefined'&&window.matchMedia('(max-width:760px)').matches);
  const [date,setDate]=useState(new Date());
  const [toast,setToast]=useState('');
  const [storageOk,setStorageOk]=useState(true);
  const importRef=useRef(null);
  const focusRef=useRef(false);
 
+ useEffect(()=>{
+  const media=window.matchMedia('(max-width:760px)');
+  const sync=()=>setMobileNav(media.matches);
+  sync();
+  media.addEventListener('change',sync);
+  return()=>media.removeEventListener('change',sync);
+ },[]);
+ const panelExpanded=mobileNav?sidebarOpen:!sidebarCollapsed;
+ function toggleSidebar(){if(mobileNav)setSidebarOpen(open=>!open);else setSidebarCollapsed(closed=>!closed)}
  useEffect(()=>{setStorageOk(persistNotes(notes))},[notes]);
  useEffect(()=>{try{localStorage.setItem(PREF_KEY,JSON.stringify({grid:layout}))}catch{}},[layout]);
  useEffect(()=>{try{localStorage.setItem('takenote.ai.prefs.v2',JSON.stringify(aiConfig))}catch{}},[aiConfig]);
@@ -176,9 +186,14 @@ export default function App() {
  function NavButton({label,icon:Icon,active,action,primary=false}) {return <button className={'nav-button '+(active?'nav-active ':'')+(primary?'nav-primary':'')} onClick={action}><Icon size={18}/><span>{label}</span>{active&&<span className="nav-dot" aria-hidden="true"/>}</button>}
  return (
  <div className={'app-shell flex min-h-screen '+(sidebarCollapsed?'desktop-sidebar-hidden':'')}>
-  <aside className={'sidebar '+(sidebarOpen?'sidebar-open':'')} aria-label="Main navigation">
-   <div className="logo flex gap-3 items-center"><div className="logo-icon"><PixelMark/></div><div><div className="brand-text">TakeNote</div><div className="brand-subtitle">YOUR PIXEL NOTEBOOK ♡</div></div></div>
-   <p className="side-label pixel-kicker mt-12 mb-4">✦ YOUR HAPPY PLACE</p>
+  <aside className={'sidebar '+(sidebarOpen?'sidebar-open':'')} aria-label="Main navigation" id="takenote-sidebar">
+   <div className="sidebar-header">
+    <button type="button" className="hamburger sidebar-toggle" aria-controls="takenote-sidebar" aria-label={panelExpanded?'Collapse side panel':'Expand side panel'} title={panelExpanded?'Collapse menu':'Expand menu'} aria-expanded={panelExpanded} onClick={toggleSidebar}><Menu size={20}/></button>
+    {panelExpanded&&<div className="logo flex gap-2 items-center"><div className="logo-icon"><PixelMark size={22}/></div><div className="brand-text">TakeNote</div></div>}
+   </div>
+   {panelExpanded&&<>
+   <p className="side-label pixel-kicker mt-3 mb-4">YOUR PIXEL NOTEBOOK ♡</p>
+   <p className="side-label pixel-kicker mt-7 mb-4">✦ YOUR HAPPY PLACE</p>
    <nav className="flex flex-col gap-2">
     <NavButton label="New note" icon={Plus} primary active={view==='write'} action={createNote}/>
     <NavButton label="My notes" icon={BookOpen} active={view==='notes'} action={()=>navigate('notes')}/>
@@ -189,13 +204,13 @@ export default function App() {
     <div className="kitty-card"><CatMascot/><div className="pixel-kicker mt-3">YOU GOT THIS!</div><p className="text-xs font-semibold mt-2">Every little thought matters ♡</p></div>
     <p className="sidebar-foot text-center text-[10px] font-bold mt-5">✿ A space for the little things</p>
    </div>
+   </>}
   </aside>
   {sidebarOpen&&<button className="sidebar-shade" aria-label="Close navigation" onClick={()=>setSidebarOpen(false)}/>}
   <div className="main-surface min-w-0 flex-1">
    <div className="site-container mx-auto">
     <header className="topbar flex items-center justify-between gap-3">
      <div className="flex items-center gap-3">
-      <button className="hamburger" aria-label="Toggle navigation" aria-expanded={sidebarOpen} onClick={()=>{if(window.matchMedia('(max-width:760px)').matches)setSidebarOpen(x=>!x);else setSidebarCollapsed(x=>!x)}}><Menu size={20}/></button>
       <div className="mobile-brand" aria-label="TakeNote"><span className="mobile-logo-icon"><PixelMark size={21}/></span><span>TakeNote</span></div>
       <div className="breadcrumb text-xs font-extrabold">my little corner <span className="mx-2">/</span> <span className="breadcrumb-current">{view==='write'?'writing desk':view==='dashboard'?'notes insights':view==='pinned'?'pinned notes':'my notes'}</span></div>
      </div>
